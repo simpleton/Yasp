@@ -1,5 +1,7 @@
 package com.simsun.common.base;
 
+import android.support.annotation.Nullable;
+
 /**
  * Fa
  */
@@ -25,7 +27,7 @@ public final class Preconditions {
    *     string using {@link String#valueOf(Object)}
    * @throws IllegalArgumentException if {@code expression} is false
    */
-  public static void checkArgument(boolean expression, Object errorMessage) {
+  public static void checkArgument(boolean expression, @Nullable Object errorMessage) {
     if (!expression) {
       throw new IllegalArgumentException(String.valueOf(errorMessage));
     }

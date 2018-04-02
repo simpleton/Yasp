@@ -6,7 +6,8 @@ import android.support.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
 
-public class YASharedPreference implements SharedPreferences{
+public class YASharedPreference implements SharedPreferences {
+
   @Override
   public Map<String, ?> getAll() {
     return null;
