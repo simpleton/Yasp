@@ -21,8 +21,5 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation project(":leveldb")
-
-    testImplementation "junit:junit:${project.JunitVersion}"
 }
 
