@@ -8,7 +8,6 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.1.0'
-        
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -24,4 +23,12 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+project.ext {
+    TargetSdkVersion=22
+    MinSdkVersion=16
+    CompileSdkVersion=27
+    AndroidSupportVersion="27.1.0"
+    JunitVersion="4.12"
 }

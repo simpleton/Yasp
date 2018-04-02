@@ -1,1 +1,4 @@
-include ':sample', ':yasp'
+include ':sample'
+include ':yasp'
+include ':leveldb'
+include ':leveldb-api'
