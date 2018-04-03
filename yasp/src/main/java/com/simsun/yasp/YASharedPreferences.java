@@ -2,16 +2,23 @@ package com.simsun.yasp;
 
 import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import org.iq80.leveldb.DB;
+import org.iq80.leveldb.DBException;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
+import static org.iq80.leveldb.impl.Iq80DBFactory.asString;
+import static org.iq80.leveldb.impl.Iq80DBFactory.bytes;
+
 public class YASharedPreferences implements SharedPreferences {
 
+  public static final String TAG = "YASharedPreferences";
   private final DB db;
+
   public YASharedPreferences(DB db) {
     this.db = db;
   }
@@ -28,7 +35,13 @@ public class YASharedPreferences implements SharedPreferences {
   @Nullable
   @Override
   public String getString(String key, @Nullable String defValue) {
-    return null;
+    String value = defValue;
+    try {
+      value = asString(db.get(bytes(key)));
+    } catch (DBException e) {
+      Log.e(TAG, "DB Exception", e);
+    }
+    return value;
   }
 
   @Nullable

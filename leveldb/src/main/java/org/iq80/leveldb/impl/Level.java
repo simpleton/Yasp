@@ -30,10 +30,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkState;
+import static com.simsun.common.base.StandardCharsets.UTF_8;
+import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.impl.SequenceNumber.MAX_SEQUENCE_NUMBER;
 import static org.iq80.leveldb.impl.ValueType.VALUE;
 
@@ -90,7 +90,15 @@ public class Level
       }
     } else {
       // Binary search to find earliest index whose largest key >= ikey.
-      int index = ceilingEntryIndex(Lists.transform(files, FileMetaData::getLargest), key.getInternalKey(), internalKeyComparator);
+      List<InternalKey> transFiles = new ArrayList<>();
+      for (FileMetaData file : files) {
+        transFiles.add(file.getLargest());
+      }
+      int index = ceilingEntryIndex(
+        transFiles,
+        key.getInternalKey(),
+        internalKeyComparator
+      );
 
       // did we find any files that could contain the key?
       if (index >= files.size()) {
@@ -130,7 +138,10 @@ public class Level
         // parse the key in the block
         Entry<InternalKey, Slice> entry = iterator.next();
         InternalKey internalKey = entry.getKey();
-        checkState(internalKey != null, "Corrupt key for %s", key.getUserKey().toString(UTF_8));
+        checkState(
+          internalKey != null,
+          String.format("Corrupt key for %s", key.getUserKey().toString(UTF_8))
+        );
 
         // if this is a value key (not a delete) and the keys match, return the value
         if (key.getUserKey().equals(internalKey.getUserKey())) {
