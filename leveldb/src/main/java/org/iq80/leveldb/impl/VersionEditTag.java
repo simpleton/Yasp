@@ -17,13 +17,12 @@
  */
 package org.iq80.leveldb.impl;
 
+import java.util.Map.Entry;
 import org.iq80.leveldb.util.SliceInput;
 import org.iq80.leveldb.util.SliceOutput;
 import org.iq80.leveldb.util.VariableLengthQuantity;
 
-import java.util.Map.Entry;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.simsun.common.base.StandardCharsets.UTF_8;
 import static org.iq80.leveldb.util.Slices.readLengthPrefixedBytes;
 import static org.iq80.leveldb.util.Slices.writeLengthPrefixedBytes;
 
@@ -48,8 +47,7 @@ public enum VersionEditTag {
         sliceOutput.writeBytes(bytes);
       }
     }
-  },
-  LOG_NUMBER(2) {
+  }, LOG_NUMBER(2) {
     @Override
     public void readValue(SliceInput sliceInput, VersionEdit versionEdit) {
       versionEdit.setLogNumber(VariableLengthQuantity.readVariableLengthLong(sliceInput));
@@ -211,19 +209,22 @@ public enum VersionEditTag {
     }
   };
 
+  private final int persistentId;
+
+  VersionEditTag(int persistentId) {
+    this.persistentId = persistentId;
+  }
+
   public static VersionEditTag getValueTypeByPersistentId(int persistentId) {
     for (VersionEditTag compressionType : VersionEditTag.values()) {
       if (compressionType.persistentId == persistentId) {
         return compressionType;
       }
     }
-    throw new IllegalArgumentException(String.format("Unknown %s persistentId %d", VersionEditTag.class.getSimpleName(), persistentId));
-  }
-
-  private final int persistentId;
-
-  VersionEditTag(int persistentId) {
-    this.persistentId = persistentId;
+    throw new IllegalArgumentException(String.format("Unknown %s persistentId %d",
+        VersionEditTag.class.getSimpleName(),
+        persistentId
+    ));
   }
 
   public int getPersistentId() {

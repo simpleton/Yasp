@@ -19,19 +19,16 @@ package org.iq80.leveldb.impl;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
-
-import org.iq80.leveldb.util.InternalIterator;
-import org.iq80.leveldb.util.Slice;
-
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
+import org.iq80.leveldb.util.InternalIterator;
+import org.iq80.leveldb.util.Slice;
 
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_LONG;
 
-public class MemTable
-  implements SeekingIterable<InternalKey, Slice> {
+public class MemTable implements SeekingIterable<InternalKey, Slice> {
   private final ConcurrentSkipListMap<InternalKey, Slice> table;
   private final AtomicLong approximateMemoryUsage = new AtomicLong();
 
@@ -83,8 +80,7 @@ public class MemTable
     return new MemTableIterator();
   }
 
-  public class MemTableIterator
-    implements InternalIterator {
+  public class MemTableIterator implements InternalIterator {
     private PeekingIterator<Entry<InternalKey, Slice>> iterator;
 
     public MemTableIterator() {

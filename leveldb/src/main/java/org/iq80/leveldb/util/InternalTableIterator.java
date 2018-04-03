@@ -18,14 +18,11 @@
 package org.iq80.leveldb.util;
 
 import com.google.common.collect.Maps;
-
+import java.util.Map.Entry;
 import org.iq80.leveldb.impl.InternalKey;
 
-import java.util.Map.Entry;
-
-public class InternalTableIterator
-  extends AbstractSeekingIterator<InternalKey, Slice>
-  implements InternalIterator {
+public class InternalTableIterator extends AbstractSeekingIterator<InternalKey, Slice>
+    implements InternalIterator {
   private final TableIterator tableIterator;
 
   public InternalTableIterator(TableIterator tableIterator) {

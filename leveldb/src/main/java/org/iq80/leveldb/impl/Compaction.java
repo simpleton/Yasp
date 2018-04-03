@@ -17,10 +17,9 @@
  */
 package org.iq80.leveldb.impl;
 
+import java.util.List;
 import org.iq80.leveldb.table.UserComparator;
 import org.iq80.leveldb.util.Slice;
-
-import java.util.List;
 
 import static com.simsun.common.base.Preconditions.checkArgument;
 import static org.iq80.leveldb.impl.DbConstants.NUM_LEVELS;
@@ -56,14 +55,19 @@ public class Compaction {
   // Bytes of overlap between current output and grandparent files
   private long overlappedBytes;
 
-  public Compaction(Version inputVersion, int level, List<FileMetaData> levelInputs, List<FileMetaData> levelUpInputs, List<FileMetaData> grandparents) {
+  public Compaction(
+      Version inputVersion,
+      int level,
+      List<FileMetaData> levelInputs,
+      List<FileMetaData> levelUpInputs,
+      List<FileMetaData> grandparents) {
     this.inputVersion = inputVersion;
     this.level = level;
     this.levelInputs = levelInputs;
     this.levelUpInputs = levelUpInputs;
     this.grandparents = grandparents;
     this.maxOutputFileSize = VersionSet.maxFileSizeForLevel(level);
-    this.inputs = new List[]{levelInputs, levelUpInputs};
+    this.inputs = new List[] { levelInputs, levelUpInputs };
   }
 
   public static long totalFileSize(List<FileMetaData> files) {
@@ -111,10 +115,9 @@ public class Compaction {
     // Avoid a move if there is lots of overlapping grandparent data.
     // Otherwise, the move could create a parent file that will require
     // a very expensive merge later on.
-    return (levelInputs.size() == 1 &&
-      levelUpInputs.isEmpty() &&
-      totalFileSize(grandparents) <= MAX_GRAND_PARENT_OVERLAP_BYTES);
-
+    return (levelInputs.size() == 1
+            && levelUpInputs.isEmpty()
+            && totalFileSize(grandparents) <= MAX_GRAND_PARENT_OVERLAP_BYTES);
   }
 
   // Add all inputs to this compaction as delete operations to *edit.
@@ -160,7 +163,10 @@ public class Compaction {
 
     // Scan to find earliest grandparent file that contains key.
     InternalKeyComparator internalKeyComparator = inputVersion.getInternalKeyComparator();
-    while (grandparentIndex < grandparents.size() && internalKeyComparator.compare(internalKey, grandparents.get(grandparentIndex).getLargest()) > 0) {
+    while (grandparentIndex < grandparents.size()
+           && internalKeyComparator.compare(internalKey,
+        grandparents.get(grandparentIndex).getLargest()
+    ) > 0) {
       if (seenKey) {
         overlappedBytes += grandparents.get(grandparentIndex).getFileSize();
       }

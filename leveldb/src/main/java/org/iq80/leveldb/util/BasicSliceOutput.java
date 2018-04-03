@@ -24,8 +24,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.charset.Charset;
 
-public class BasicSliceOutput
-  extends SliceOutput {
+public class BasicSliceOutput extends SliceOutput {
   private final Slice slice;
   private int size;
 
@@ -114,8 +113,7 @@ public class BasicSliceOutput
   }
 
   @Override
-  public int writeBytes(InputStream in, int length)
-    throws IOException {
+  public int writeBytes(InputStream in, int length) throws IOException {
     int writtenBytes = slice.setBytes(size, in, length);
     if (writtenBytes > 0) {
       size += writtenBytes;
@@ -124,8 +122,7 @@ public class BasicSliceOutput
   }
 
   @Override
-  public int writeBytes(ScatteringByteChannel in, int length)
-    throws IOException {
+  public int writeBytes(ScatteringByteChannel in, int length) throws IOException {
     int writtenBytes = slice.setBytes(size, in, length);
     if (writtenBytes > 0) {
       size += writtenBytes;
@@ -134,8 +131,7 @@ public class BasicSliceOutput
   }
 
   @Override
-  public int writeBytes(FileChannel in, int position, int length)
-    throws IOException {
+  public int writeBytes(FileChannel in, int position, int length) throws IOException {
     int writtenBytes = slice.setBytes(size, in, position, length);
     if (writtenBytes > 0) {
       size += writtenBytes;
@@ -149,8 +145,7 @@ public class BasicSliceOutput
       return;
     }
     if (length < 0) {
-      throw new IllegalArgumentException(
-        "length must be 0 or greater than 0.");
+      throw new IllegalArgumentException("length must be 0 or greater than 0.");
     }
     int nLong = length >>> 3;
     int nBytes = length & 7;
@@ -183,10 +178,14 @@ public class BasicSliceOutput
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + '(' +
-      "size=" + size + ", " +
-      "capacity=" + slice.length() +
-      ')';
+    return getClass().getSimpleName()
+           + '('
+           + "size="
+           + size
+           + ", "
+           + "capacity="
+           + slice.length()
+           + ')';
   }
 
   public String toString(Charset charset) {

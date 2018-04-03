@@ -18,7 +18,6 @@
 package org.iq80.leveldb.util;
 
 import com.google.common.base.Throwables;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -39,8 +38,11 @@ public final class ByteBufferSupport {
       Field theUnsafe = unsafeClass.getDeclaredField("theUnsafe");
       theUnsafe.setAccessible(true);
       invoker = MethodHandles.lookup()
-        .findVirtual(unsafeClass, "invokeCleaner", MethodType.methodType(void.class, ByteBuffer.class))
-        .bindTo(theUnsafe.get(null));
+          .findVirtual(unsafeClass,
+              "invokeCleaner",
+              MethodType.methodType(void.class, ByteBuffer.class)
+          )
+          .bindTo(theUnsafe.get(null));
     } catch (Exception e) {
       // fall back to pre-java 9 compatible behavior
       try {

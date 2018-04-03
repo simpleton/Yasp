@@ -17,14 +17,13 @@
  */
 package org.iq80.leveldb.impl;
 
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import org.iq80.leveldb.util.DynamicSliceOutput;
 import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.SliceInput;
 import org.iq80.leveldb.util.SliceOutput;
 import org.iq80.leveldb.util.Slices;
-
-import java.io.IOException;
-import java.nio.channels.FileChannel;
 
 import static org.iq80.leveldb.impl.LogChunkType.BAD_CHUNK;
 import static org.iq80.leveldb.impl.LogChunkType.EOF;
@@ -46,32 +45,26 @@ public class LogReader {
    * Offset at which to start looking for the first record to return
    */
   private final long initialOffset;
-
-  /**
-   * Have we read to the end of the file?
-   */
-  private boolean eof;
-
-  /**
-   * Offset of the last record returned by readRecord.
-   */
-  private long lastRecordOffset;
-
-  /**
-   * Offset of the first location past the end of buffer.
-   */
-  private long endOfBufferOffset;
-
   /**
    * Scratch buffer in which the next record is assembled.
    */
   private final DynamicSliceOutput recordScratch = new DynamicSliceOutput(BLOCK_SIZE);
-
   /**
    * Scratch buffer for current block.  The currentBlock is sliced off the underlying buffer.
    */
   private final SliceOutput blockScratch = Slices.allocate(BLOCK_SIZE).output();
-
+  /**
+   * Have we read to the end of the file?
+   */
+  private boolean eof;
+  /**
+   * Offset of the last record returned by readRecord.
+   */
+  private long lastRecordOffset;
+  /**
+   * Offset of the first location past the end of buffer.
+   */
+  private long endOfBufferOffset;
   /**
    * The current block records are being read from.
    */
@@ -82,7 +75,8 @@ public class LogReader {
    */
   private Slice currentChunk = Slices.EMPTY_SLICE;
 
-  public LogReader(FileChannel fileChannel, LogMonitor monitor, boolean verifyChecksums, long initialOffset) {
+  public LogReader(
+      FileChannel fileChannel, LogMonitor monitor, boolean verifyChecksums, long initialOffset) {
     this.fileChannel = fileChannel;
     this.monitor = monitor;
     this.verifyChecksums = verifyChecksums;
@@ -313,7 +307,6 @@ public class LogReader {
         eof = true;
         return false;
       }
-
     }
     currentBlock = blockScratch.slice().input();
     return currentBlock.isReadable();

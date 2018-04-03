@@ -30,8 +30,8 @@ import java.util.Arrays;
 
 import static com.google.common.base.Preconditions.checkPositionIndex;
 import static com.google.common.base.Preconditions.checkPositionIndexes;
+import static com.simsun.common.base.Utils.requireNonNull;
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
-import static java.util.Objects.requireNonNull;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_BYTE;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_INT;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_LONG;
@@ -40,8 +40,7 @@ import static org.iq80.leveldb.util.SizeOf.SIZE_OF_SHORT;
 /**
  * Little Endian slice of a byte array.
  */
-public final class Slice
-  implements Comparable<Slice> {
+public final class Slice implements Comparable<Slice> {
   private final byte[] data;
   private final int offset;
   private final int length;
@@ -93,7 +92,7 @@ public final class Slice
    * Gets a byte at the specified absolute {@code index} in this buffer.
    *
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   {@code index + 1} is greater than {@code this.capacity}
+   *     {@code index + 1} is greater than {@code this.capacity}
    */
   public byte getByte(int index) {
     checkPositionIndexes(index, index + SIZE_OF_BYTE, this.length);
@@ -106,7 +105,7 @@ public final class Slice
    * buffer.
    *
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   {@code index + 1} is greater than {@code this.capacity}
+   *     {@code index + 1} is greater than {@code this.capacity}
    */
   public short getUnsignedByte(int index) {
     return (short) (getByte(index) & 0xFF);
@@ -117,7 +116,7 @@ public final class Slice
    * this slice.
    *
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   {@code index + 2} is greater than {@code this.capacity}
+   *     {@code index + 2} is greater than {@code this.capacity}
    */
   public short getShort(int index) {
     checkPositionIndexes(index, index + SIZE_OF_SHORT, this.length);
@@ -130,15 +129,15 @@ public final class Slice
    * this buffer.
    *
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   {@code index + 4} is greater than {@code this.capacity}
+   *     {@code index + 4} is greater than {@code this.capacity}
    */
   public int getInt(int index) {
     checkPositionIndexes(index, index + SIZE_OF_INT, this.length);
     index += offset;
-    return (data[index] & 0xff) |
-      (data[index + 1] & 0xff) << 8 |
-      (data[index + 2] & 0xff) << 16 |
-      (data[index + 3] & 0xff) << 24;
+    return (data[index] & 0xff)
+           | (data[index + 1] & 0xff) << 8
+           | (data[index + 2] & 0xff) << 16
+           | (data[index + 3] & 0xff) << 24;
   }
 
   /**
@@ -146,19 +145,19 @@ public final class Slice
    * this buffer.
    *
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   {@code index + 8} is greater than {@code this.capacity}
+   *     {@code index + 8} is greater than {@code this.capacity}
    */
   public long getLong(int index) {
     checkPositionIndexes(index, index + SIZE_OF_LONG, this.length);
     index += offset;
-    return ((long) data[index] & 0xff) |
-      ((long) data[index + 1] & 0xff) << 8 |
-      ((long) data[index + 2] & 0xff) << 16 |
-      ((long) data[index + 3] & 0xff) << 24 |
-      ((long) data[index + 4] & 0xff) << 32 |
-      ((long) data[index + 5] & 0xff) << 40 |
-      ((long) data[index + 6] & 0xff) << 48 |
-      ((long) data[index + 7] & 0xff) << 56;
+    return ((long) data[index] & 0xff)
+           | ((long) data[index + 1] & 0xff) << 8
+           | ((long) data[index + 2] & 0xff) << 16
+           | ((long) data[index + 3] & 0xff) << 24
+           | ((long) data[index + 4] & 0xff) << 32
+           | ((long) data[index + 5] & 0xff) << 40
+           | ((long) data[index + 6] & 0xff) << 48
+           | ((long) data[index + 7] & 0xff) << 56;
   }
 
   /**
@@ -166,13 +165,13 @@ public final class Slice
    * the specified absolute {@code index}.
    *
    * @param dstIndex the first index of the destination
-   * @param length   the number of bytes to transfer
+   * @param length the number of bytes to transfer
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0},
-   *                                   if the specified {@code dstIndex} is less than {@code 0},
-   *                                   if {@code index + length} is greater than
-   *                                   {@code this.capacity}, or
-   *                                   if {@code dstIndex + length} is greater than
-   *                                   {@code dst.capacity}
+   *     if the specified {@code dstIndex} is less than {@code 0},
+   *     if {@code index + length} is greater than
+   *     {@code this.capacity}, or
+   *     if {@code dstIndex + length} is greater than
+   *     {@code dst.capacity}
    */
   public void getBytes(int index, Slice dst, int dstIndex, int length) {
     getBytes(index, dst.data, dstIndex, length);
@@ -183,13 +182,13 @@ public final class Slice
    * the specified absolute {@code index}.
    *
    * @param destinationIndex the first index of the destination
-   * @param length           the number of bytes to transfer
+   * @param length the number of bytes to transfer
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0},
-   *                                   if the specified {@code dstIndex} is less than {@code 0},
-   *                                   if {@code index + length} is greater than
-   *                                   {@code this.capacity}, or
-   *                                   if {@code dstIndex + length} is greater than
-   *                                   {@code dst.length}
+   *     if the specified {@code dstIndex} is less than {@code 0},
+   *     if {@code index + length} is greater than
+   *     {@code this.capacity}, or
+   *     if {@code dstIndex + length} is greater than
+   *     {@code dst.length}
    */
   public void getBytes(int index, byte[] destination, int destinationIndex, int length) {
     checkPositionIndexes(index, index + length, this.length);
@@ -219,8 +218,8 @@ public final class Slice
    * reaches its limit.
    *
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   if {@code index + dst.remaining()} is greater than
-   *                                   {@code this.capacity}
+   *     if {@code index + dst.remaining()} is greater than
+   *     {@code this.capacity}
    */
   public void getBytes(int index, ByteBuffer destination) {
     checkPositionIndex(index, this.length);
@@ -234,12 +233,11 @@ public final class Slice
    *
    * @param length the number of bytes to transfer
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   if {@code index + length} is greater than
-   *                                   {@code this.capacity}
-   * @throws java.io.IOException       if the specified stream threw an exception during I/O
+   *     if {@code index + length} is greater than
+   *     {@code this.capacity}
+   * @throws java.io.IOException if the specified stream threw an exception during I/O
    */
-  public void getBytes(int index, OutputStream out, int length)
-    throws IOException {
+  public void getBytes(int index, OutputStream out, int length) throws IOException {
     checkPositionIndexes(index, index + length, this.length);
     index += offset;
     out.write(data, index, length);
@@ -252,12 +250,11 @@ public final class Slice
    * @param length the maximum number of bytes to transfer
    * @return the actual number of bytes written out to the specified channel
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   if {@code index + length} is greater than
-   *                                   {@code this.capacity}
-   * @throws java.io.IOException       if the specified channel threw an exception during I/O
+   *     if {@code index + length} is greater than
+   *     {@code this.capacity}
+   * @throws java.io.IOException if the specified channel threw an exception during I/O
    */
-  public int getBytes(int index, GatheringByteChannel out, int length)
-    throws IOException {
+  public int getBytes(int index, GatheringByteChannel out, int length) throws IOException {
     checkPositionIndexes(index, index + length, this.length);
     index += offset;
     return out.write(ByteBuffer.wrap(data, index, length));
@@ -269,7 +266,7 @@ public final class Slice
    * value are ignored.
    *
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   {@code index + 2} is greater than {@code this.capacity}
+   *     {@code index + 2} is greater than {@code this.capacity}
    */
   public void setShort(int index, int value) {
     checkPositionIndexes(index, index + SIZE_OF_SHORT, this.length);
@@ -283,7 +280,7 @@ public final class Slice
    * {@code index} in this buffer.
    *
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   {@code index + 4} is greater than {@code this.capacity}
+   *     {@code index + 4} is greater than {@code this.capacity}
    */
   public void setInt(int index, int value) {
     checkPositionIndexes(index, index + SIZE_OF_INT, this.length);
@@ -299,7 +296,7 @@ public final class Slice
    * {@code index} in this buffer.
    *
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   {@code index + 8} is greater than {@code this.capacity}
+   *     {@code index + 8} is greater than {@code this.capacity}
    */
   public void setLong(int index, long value) {
     checkPositionIndexes(index, index + SIZE_OF_LONG, this.length);
@@ -319,7 +316,7 @@ public final class Slice
    * buffer.  The 24 high-order bits of the specified value are ignored.
    *
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   {@code index + 1} is greater than {@code this.capacity}
+   *     {@code index + 1} is greater than {@code this.capacity}
    */
   public void setByte(int index, int value) {
     checkPositionIndexes(index, index + SIZE_OF_BYTE, this.length);
@@ -332,13 +329,13 @@ public final class Slice
    * the specified absolute {@code index}.
    *
    * @param srcIndex the first index of the source
-   * @param length   the number of bytes to transfer
+   * @param length the number of bytes to transfer
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0},
-   *                                   if the specified {@code srcIndex} is less than {@code 0},
-   *                                   if {@code index + length} is greater than
-   *                                   {@code this.capacity}, or
-   *                                   if {@code srcIndex + length} is greater than
-   *                                   {@code src.capacity}
+   *     if the specified {@code srcIndex} is less than {@code 0},
+   *     if {@code index + length} is greater than
+   *     {@code this.capacity}, or
+   *     if {@code srcIndex + length} is greater than
+   *     {@code src.capacity}
    */
   public void setBytes(int index, Slice src, int srcIndex, int length) {
     setBytes(index, src.data, src.offset + srcIndex, length);
@@ -349,10 +346,10 @@ public final class Slice
    * the specified absolute {@code index}.
    *
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0},
-   *                                   if the specified {@code srcIndex} is less than {@code 0},
-   *                                   if {@code index + length} is greater than
-   *                                   {@code this.capacity}, or
-   *                                   if {@code srcIndex + length} is greater than {@code src.length}
+   *     if the specified {@code srcIndex} is less than {@code 0},
+   *     if {@code index + length} is greater than
+   *     {@code this.capacity}, or
+   *     if {@code srcIndex + length} is greater than {@code src.length}
    */
   public void setBytes(int index, byte[] source, int sourceIndex, int length) {
     checkPositionIndexes(index, index + length, this.length);
@@ -367,8 +364,8 @@ public final class Slice
    * reaches its limit.
    *
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   if {@code index + src.remaining()} is greater than
-   *                                   {@code this.capacity}
+   *     if {@code index + src.remaining()} is greater than
+   *     {@code this.capacity}
    */
   public void setBytes(int index, ByteBuffer source) {
     checkPositionIndexes(index, index + source.remaining(), this.length);
@@ -382,13 +379,12 @@ public final class Slice
    *
    * @param length the number of bytes to transfer
    * @return the actual number of bytes read in from the specified channel.
-   * {@code -1} if the specified channel is closed.
+   *     {@code -1} if the specified channel is closed.
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   if {@code index + length} is greater than {@code this.capacity}
-   * @throws java.io.IOException       if the specified stream threw an exception during I/O
+   *     if {@code index + length} is greater than {@code this.capacity}
+   * @throws java.io.IOException if the specified stream threw an exception during I/O
    */
-  public int setBytes(int index, InputStream in, int length)
-    throws IOException {
+  public int setBytes(int index, InputStream in, int length) throws IOException {
     checkPositionIndexes(index, index + length, this.length);
     index += offset;
     int readBytes = 0;
@@ -415,13 +411,12 @@ public final class Slice
    *
    * @param length the maximum number of bytes to transfer
    * @return the actual number of bytes read in from the specified channel.
-   * {@code -1} if the specified channel is closed.
+   *     {@code -1} if the specified channel is closed.
    * @throws IndexOutOfBoundsException if the specified {@code index} is less than {@code 0} or
-   *                                   if {@code index + length} is greater than {@code this.capacity}
-   * @throws java.io.IOException       if the specified channel threw an exception during I/O
+   *     if {@code index + length} is greater than {@code this.capacity}
+   * @throws java.io.IOException if the specified channel threw an exception during I/O
    */
-  public int setBytes(int index, ScatteringByteChannel in, int length)
-    throws IOException {
+  public int setBytes(int index, ScatteringByteChannel in, int length) throws IOException {
     checkPositionIndexes(index, index + length, this.length);
     index += offset;
     ByteBuffer buf = ByteBuffer.wrap(data, index, length);
@@ -449,8 +444,7 @@ public final class Slice
     return readBytes;
   }
 
-  public int setBytes(int index, FileChannel in, int position, int length)
-    throws IOException {
+  public int setBytes(int index, FileChannel in, int position, int length) throws IOException {
     checkPositionIndexes(index, index + length, this.length);
     index += offset;
     ByteBuffer buf = ByteBuffer.wrap(data, index, length);
@@ -659,8 +653,6 @@ public final class Slice
   }
 
   public String toString() {
-    return getClass().getSimpleName() + '(' +
-      "length=" + length() +
-      ')';
+    return getClass().getSimpleName() + '(' + "length=" + length() + ')';
   }
 }

@@ -18,30 +18,26 @@
 package org.iq80.leveldb.table;
 
 import com.google.common.primitives.Ints;
-
+import java.util.Comparator;
 import org.iq80.leveldb.util.DynamicSliceOutput;
 import org.iq80.leveldb.util.IntVector;
 import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.VariableLengthQuantity;
 
-import java.util.Comparator;
-
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkPositionIndex;
 import static com.google.common.base.Preconditions.checkState;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_INT;
 
 public class BlockBuilder {
   private final int blockRestartInterval;
   private final IntVector restartPositions;
   private final Comparator<Slice> comparator;
-
+  private final DynamicSliceOutput block;
   private int entryCount;
   private int restartBlockEntryCount;
-
   private boolean finished;
-  private final DynamicSliceOutput block;
   private Slice lastKey;
 
   public BlockBuilder(int estimatedSize, int blockRestartInterval, Comparator<Slice> comparator) {
@@ -55,6 +51,20 @@ public class BlockBuilder {
 
     restartPositions = new IntVector(32);
     restartPositions.add(0);  // first restart point must be 0
+  }
+
+  public static int calculateSharedBytes(Slice leftKey, Slice rightKey) {
+    int sharedKeyBytes = 0;
+
+    if (leftKey != null && rightKey != null) {
+      int minSharedKeyBytes = Ints.min(leftKey.length(), rightKey.length());
+      while (sharedKeyBytes < minSharedKeyBytes
+             && leftKey.getByte(sharedKeyBytes) == rightKey.getByte(sharedKeyBytes)) {
+        sharedKeyBytes++;
+      }
+    }
+
+    return sharedKeyBytes;
   }
 
   public void reset() {
@@ -87,8 +97,8 @@ public class BlockBuilder {
     }
 
     return block.size() +                              // raw data buffer
-      restartPositions.size() * SIZE_OF_INT +    // restart positions
-      SIZE_OF_INT;                               // restart position size
+           restartPositions.size() * SIZE_OF_INT +    // restart positions
+           SIZE_OF_INT;                               // restart position size
   }
 
   public void add(BlockEntry blockEntry) {
@@ -102,7 +112,10 @@ public class BlockBuilder {
     checkState(!finished, "block is finished");
     checkPositionIndex(restartBlockEntryCount, blockRestartInterval);
 
-    checkArgument(lastKey == null || comparator.compare(key, lastKey) > 0, "key must be greater than last key");
+    checkArgument(
+        lastKey == null || comparator.compare(key, lastKey) > 0,
+        "key must be greater than last key"
+    );
 
     int sharedKeyBytes = 0;
     if (restartBlockEntryCount < blockRestartInterval) {
@@ -132,19 +145,6 @@ public class BlockBuilder {
     // update state
     entryCount++;
     restartBlockEntryCount++;
-  }
-
-  public static int calculateSharedBytes(Slice leftKey, Slice rightKey) {
-    int sharedKeyBytes = 0;
-
-    if (leftKey != null && rightKey != null) {
-      int minSharedKeyBytes = Ints.min(leftKey.length(), rightKey.length());
-      while (sharedKeyBytes < minSharedKeyBytes && leftKey.getByte(sharedKeyBytes) == rightKey.getByte(sharedKeyBytes)) {
-        sharedKeyBytes++;
-      }
-    }
-
-    return sharedKeyBytes;
   }
 
   public Slice finish() {

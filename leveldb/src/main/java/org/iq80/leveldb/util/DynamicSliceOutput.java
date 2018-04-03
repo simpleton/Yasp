@@ -24,8 +24,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.charset.Charset;
 
-public class DynamicSliceOutput
-  extends SliceOutput {
+public class DynamicSliceOutput extends SliceOutput {
   private Slice slice;
   private int size;
 
@@ -121,8 +120,7 @@ public class DynamicSliceOutput
   }
 
   @Override
-  public int writeBytes(InputStream in, int length)
-    throws IOException {
+  public int writeBytes(InputStream in, int length) throws IOException {
     slice = Slices.ensureSize(slice, size + length);
     int writtenBytes = slice.setBytes(size, in, length);
     if (writtenBytes > 0) {
@@ -132,8 +130,7 @@ public class DynamicSliceOutput
   }
 
   @Override
-  public int writeBytes(ScatteringByteChannel in, int length)
-    throws IOException {
+  public int writeBytes(ScatteringByteChannel in, int length) throws IOException {
     slice = Slices.ensureSize(slice, size + length);
     int writtenBytes = slice.setBytes(size, in, length);
     if (writtenBytes > 0) {
@@ -143,8 +140,7 @@ public class DynamicSliceOutput
   }
 
   @Override
-  public int writeBytes(FileChannel in, int position, int length)
-    throws IOException {
+  public int writeBytes(FileChannel in, int position, int length) throws IOException {
     slice = Slices.ensureSize(slice, size + length);
     int writtenBytes = slice.setBytes(size, in, position, length);
     if (writtenBytes > 0) {
@@ -159,8 +155,7 @@ public class DynamicSliceOutput
       return;
     }
     if (length < 0) {
-      throw new IllegalArgumentException(
-        "length must be 0 or greater than 0.");
+      throw new IllegalArgumentException("length must be 0 or greater than 0.");
     }
     slice = Slices.ensureSize(slice, size + length);
     int nLong = length >>> 3;
@@ -194,10 +189,14 @@ public class DynamicSliceOutput
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + '(' +
-      "size=" + size + ", " +
-      "capacity=" + slice.length() +
-      ')';
+    return getClass().getSimpleName()
+           + '('
+           + "size="
+           + size
+           + ", "
+           + "capacity="
+           + slice.length()
+           + ')';
   }
 
   @Override

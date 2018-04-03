@@ -20,27 +20,27 @@ package org.iq80.leveldb.util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
-
-import org.iq80.leveldb.impl.FileMetaData;
-import org.iq80.leveldb.impl.InternalKey;
-import org.iq80.leveldb.impl.SeekingIterator;
-import org.iq80.leveldb.impl.TableCache;
-
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
+import org.iq80.leveldb.impl.FileMetaData;
+import org.iq80.leveldb.impl.InternalKey;
+import org.iq80.leveldb.impl.SeekingIterator;
+import org.iq80.leveldb.impl.TableCache;
 
-public final class Level0Iterator
-  extends AbstractSeekingIterator<InternalKey, Slice>
-  implements InternalIterator {
+public final class Level0Iterator extends AbstractSeekingIterator<InternalKey, Slice>
+    implements InternalIterator {
   private final List<InternalTableIterator> inputs;
   private final PriorityQueue<ComparableIterator> priorityQueue;
   private final Comparator<InternalKey> comparator;
 
-  public Level0Iterator(TableCache tableCache, List<FileMetaData> files, Comparator<InternalKey> comparator) {
+  public Level0Iterator(
+      TableCache tableCache,
+      List<FileMetaData> files,
+      Comparator<InternalKey> comparator) {
     Builder<InternalTableIterator> builder = ImmutableList.builder();
     for (FileMetaData file : files) {
       builder.add(tableCache.newIterator(file));
@@ -109,13 +109,17 @@ public final class Level0Iterator
   }
 
   private static class ComparableIterator
-    implements Iterator<Entry<InternalKey, Slice>>, Comparable<ComparableIterator> {
+      implements Iterator<Entry<InternalKey, Slice>>, Comparable<ComparableIterator> {
     private final SeekingIterator<InternalKey, Slice> iterator;
     private final Comparator<InternalKey> comparator;
     private final int ordinal;
     private Entry<InternalKey, Slice> nextElement;
 
-    private ComparableIterator(SeekingIterator<InternalKey, Slice> iterator, Comparator<InternalKey> comparator, int ordinal, Entry<InternalKey, Slice> nextElement) {
+    private ComparableIterator(
+        SeekingIterator<InternalKey, Slice> iterator,
+        Comparator<InternalKey> comparator,
+        int ordinal,
+        Entry<InternalKey, Slice> nextElement) {
       this.iterator = iterator;
       this.comparator = comparator;
       this.ordinal = ordinal;
@@ -161,7 +165,8 @@ public final class Level0Iterator
       if (ordinal != comparableIterator.ordinal) {
         return false;
       }
-      if (nextElement != null ? !nextElement.equals(comparableIterator.nextElement) : comparableIterator.nextElement != null) {
+      if (nextElement != null ? !nextElement.equals(comparableIterator.nextElement)
+          : comparableIterator.nextElement != null) {
         return false;
       }
 

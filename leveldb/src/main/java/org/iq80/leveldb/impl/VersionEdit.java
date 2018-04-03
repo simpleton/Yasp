@@ -21,24 +21,22 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-
+import java.util.Map;
+import java.util.TreeMap;
 import org.iq80.leveldb.util.DynamicSliceOutput;
 import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.SliceInput;
 import org.iq80.leveldb.util.VariableLengthQuantity;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 public class VersionEdit {
+  private final Map<Integer, InternalKey> compactPointers = new TreeMap<>();
+  private final Multimap<Integer, FileMetaData> newFiles = ArrayListMultimap.create();
+  private final Multimap<Integer, Long> deletedFiles = ArrayListMultimap.create();
   private String comparatorName;
   private Long logNumber;
   private Long nextFileNumber;
   private Long previousLogNumber;
   private Long lastSequenceNumber;
-  private final Map<Integer, InternalKey> compactPointers = new TreeMap<>();
-  private final Multimap<Integer, FileMetaData> newFiles = ArrayListMultimap.create();
-  private final Multimap<Integer, Long> deletedFiles = ArrayListMultimap.create();
 
   public VersionEdit() {
   }
@@ -96,12 +94,12 @@ public class VersionEdit {
     return ImmutableMap.copyOf(compactPointers);
   }
 
-  public void setCompactPointer(int level, InternalKey key) {
-    compactPointers.put(level, key);
-  }
-
   public void setCompactPointers(Map<Integer, InternalKey> compactPointers) {
     this.compactPointers.putAll(compactPointers);
+  }
+
+  public void setCompactPointer(int level, InternalKey key) {
+    compactPointers.put(level, key);
   }
 
   public Multimap<Integer, FileMetaData> getNewFiles() {
@@ -111,10 +109,8 @@ public class VersionEdit {
   // Add the specified file at the specified level.
   // REQUIRES: This version has not been saved (see VersionSet::SaveTo)
   // REQUIRES: "smallest" and "largest" are smallest and largest keys in file
-  public void addFile(int level, long fileNumber,
-                      long fileSize,
-                      InternalKey smallest,
-                      InternalKey largest) {
+  public void addFile(
+      int level, long fileNumber, long fileSize, InternalKey smallest, InternalKey largest) {
     FileMetaData fileMetaData = new FileMetaData(fileNumber, fileSize, smallest, largest);
     addFile(level, fileMetaData);
   }

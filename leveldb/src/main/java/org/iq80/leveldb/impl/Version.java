@@ -21,30 +21,27 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.iq80.leveldb.util.InternalIterator;
 import org.iq80.leveldb.util.InternalTableIterator;
 import org.iq80.leveldb.util.LevelIterator;
 import org.iq80.leveldb.util.MergingIterator;
 import org.iq80.leveldb.util.Slice;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkPositionIndex;
 import static com.google.common.collect.Ordering.natural;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.impl.DbConstants.MAX_MEM_COMPACT_LEVEL;
 import static org.iq80.leveldb.impl.DbConstants.NUM_LEVELS;
 import static org.iq80.leveldb.impl.SequenceNumber.MAX_SEQUENCE_NUMBER;
 import static org.iq80.leveldb.impl.VersionSet.MAX_GRAND_PARENT_OVERLAP_BYTES;
 
 // todo this class should be immutable
-public class Version
-  implements SeekingIterable<InternalKey, Slice> {
+public class Version implements SeekingIterable<InternalKey, Slice> {
   private final AtomicInteger retained = new AtomicInteger(1);
   private final VersionSet versionSet;
   private final Level0 level0;
@@ -60,7 +57,8 @@ public class Version
     this.versionSet = versionSet;
     checkArgument(NUM_LEVELS > 1, "levels must be at least 2");
 
-    this.level0 = new Level0(new ArrayList<FileMetaData>(), getTableCache(), getInternalKeyComparator());
+    this.level0 =
+        new Level0(new ArrayList<FileMetaData>(), getTableCache(), getInternalKeyComparator());
 
     Builder<Level> builder = ImmutableList.builder();
     for (int i = 1; i < NUM_LEVELS; i++) {
@@ -68,7 +66,6 @@ public class Version
       builder.add(new Level(i, files, getTableCache(), getInternalKeyComparator()));
     }
     this.levels = builder.build();
-
   }
 
   public void assertNoOverlappingFiles() {
@@ -85,10 +82,13 @@ public class Version
         InternalKey previousEnd = null;
         for (FileMetaData fileMetaData : files) {
           if (previousEnd != null) {
-            checkArgument(getInternalKeyComparator().compare(
-              previousEnd,
-              fileMetaData.getSmallest()
-            ) < 0, "Overlapping files %s and %s in level %s", previousFileNumber, fileMetaData.getNumber(), level);
+            checkArgument(
+                getInternalKeyComparator().compare(previousEnd, fileMetaData.getSmallest()) < 0,
+                "Overlapping files %s and %s in level %s",
+                previousFileNumber,
+                fileMetaData.getNumber(),
+                level
+            );
           }
 
           previousFileNumber = fileMetaData.getNumber();
@@ -177,7 +177,8 @@ public class Version
         if (overlapInLevel(level + 1, smallestUserKey, largestUserKey)) {
           break;
         }
-        long sum = Compaction.totalFileSize(versionSet.getOverlappingInputs(level + 2, start, limit));
+        long sum =
+            Compaction.totalFileSize(versionSet.getOverlappingInputs(level + 2, start, limit));
         if (sum > MAX_GRAND_PARENT_OVERLAP_BYTES) {
           break;
         }

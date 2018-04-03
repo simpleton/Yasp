@@ -18,7 +18,9 @@
 package org.iq80.leveldb.table;
 
 import com.google.common.base.Throwables;
-
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import org.iq80.leveldb.CompressionType;
 import org.iq80.leveldb.Options;
 import org.iq80.leveldb.util.PureJavaCrc32C;
@@ -26,12 +28,8 @@ import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.Slices;
 import org.iq80.leveldb.util.Snappy;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-
 import static com.google.common.base.Preconditions.checkState;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.impl.VersionSet.TARGET_FILE_SIZE;
 
 public class TableBuilder {
@@ -49,9 +47,8 @@ public class TableBuilder {
   private final FileChannel fileChannel;
   private final BlockBuilder dataBlockBuilder;
   private final BlockBuilder indexBlockBuilder;
-  private Slice lastKey;
   private final UserComparator userComparator;
-
+  private Slice lastKey;
   private long entryCount;
 
   // Either Finish() or Abandon() has been called.
@@ -75,7 +72,12 @@ public class TableBuilder {
     requireNonNull(options, "options is null");
     requireNonNull(fileChannel, "fileChannel is null");
     try {
-      checkState(position == fileChannel.position(), "Expected position %s to equal fileChannel.position %s", position, fileChannel.position());
+      checkState(
+          position == fileChannel.position(),
+          "Expected position %s to equal fileChannel.position %s",
+          position,
+          fileChannel.position()
+      );
     } catch (IOException e) {
       throw Throwables.propagate(e);
     }
@@ -87,112 +89,19 @@ public class TableBuilder {
     blockSize = options.blockSize();
     compressionType = options.compressionType();
 
-    dataBlockBuilder = new BlockBuilder((int) Math.min(blockSize * 1.1, TARGET_FILE_SIZE), blockRestartInterval, userComparator);
+    dataBlockBuilder = new BlockBuilder((int) Math.min(blockSize * 1.1, TARGET_FILE_SIZE),
+        blockRestartInterval,
+        userComparator
+    );
 
     // with expected 50% compression
     int expectedNumberOfBlocks = 1024;
-    indexBlockBuilder = new BlockBuilder(BlockHandle.MAX_ENCODED_LENGTH * expectedNumberOfBlocks, 1, userComparator);
+    indexBlockBuilder = new BlockBuilder(BlockHandle.MAX_ENCODED_LENGTH * expectedNumberOfBlocks,
+        1,
+        userComparator
+    );
 
     lastKey = Slices.EMPTY_SLICE;
-  }
-
-  public long getEntryCount() {
-    return entryCount;
-  }
-
-  public long getFileSize()
-    throws IOException {
-    return position + dataBlockBuilder.currentSizeEstimate();
-  }
-
-  public void add(BlockEntry blockEntry)
-    throws IOException {
-    requireNonNull(blockEntry, "blockEntry is null");
-    add(blockEntry.getKey(), blockEntry.getValue());
-  }
-
-  public void add(Slice key, Slice value)
-    throws IOException {
-    requireNonNull(key, "key is null");
-    requireNonNull(value, "value is null");
-
-    checkState(!closed, "table is finished");
-
-    if (entryCount > 0) {
-      assert (userComparator.compare(key, lastKey) > 0) : "key must be greater than last key";
-    }
-
-    // If we just wrote a block, we can now add the handle to index block
-    if (pendingIndexEntry) {
-      checkState(dataBlockBuilder.isEmpty(), "Internal error: Table has a pending index entry but data block builder is empty");
-
-      Slice shortestSeparator = userComparator.findShortestSeparator(lastKey, key);
-
-      Slice handleEncoding = BlockHandle.writeBlockHandle(pendingHandle);
-      indexBlockBuilder.add(shortestSeparator, handleEncoding);
-      pendingIndexEntry = false;
-    }
-
-    lastKey = key;
-    entryCount++;
-    dataBlockBuilder.add(key, value);
-
-    int estimatedBlockSize = dataBlockBuilder.currentSizeEstimate();
-    if (estimatedBlockSize >= blockSize) {
-      flush();
-    }
-  }
-
-  private void flush()
-    throws IOException {
-    checkState(!closed, "table is finished");
-    if (dataBlockBuilder.isEmpty()) {
-      return;
-    }
-
-    checkState(!pendingIndexEntry, "Internal error: Table already has a pending index entry to flush");
-
-    pendingHandle = writeBlock(dataBlockBuilder);
-    pendingIndexEntry = true;
-  }
-
-  private BlockHandle writeBlock(BlockBuilder blockBuilder)
-    throws IOException {
-    // close the block
-    Slice raw = blockBuilder.finish();
-
-    // attempt to compress the block
-    Slice blockContents = raw;
-    CompressionType blockCompressionType = CompressionType.NONE;
-    if (compressionType == CompressionType.SNAPPY) {
-      ensureCompressedOutputCapacity(maxCompressedLength(raw.length()));
-      try {
-        int compressedSize = Snappy.compress(raw.getRawArray(), raw.getRawOffset(), raw.length(), compressedOutput.getRawArray(), 0);
-
-        // Don't use the compressed data if compressed less than 12.5%,
-        if (compressedSize < raw.length() - (raw.length() / 8)) {
-          blockContents = compressedOutput.slice(0, compressedSize);
-          blockCompressionType = CompressionType.SNAPPY;
-        }
-      } catch (IOException ignored) {
-        // compression failed, so just store uncompressed form
-      }
-    }
-
-    // create block trailer
-    BlockTrailer blockTrailer = new BlockTrailer(blockCompressionType, crc32c(blockContents, blockCompressionType));
-    Slice trailer = BlockTrailer.writeBlockTrailer(blockTrailer);
-
-    // create a handle to this block
-    BlockHandle blockHandle = new BlockHandle(position, blockContents.length());
-
-    // write data and trailer
-    position += fileChannel.write(new ByteBuffer[]{blockContents.toByteBuffer(), trailer.toByteBuffer()});
-
-    // clean up state
-    blockBuilder.reset();
-
-    return blockHandle;
   }
 
   private static int maxCompressedLength(int length) {
@@ -219,8 +128,122 @@ public class TableBuilder {
     return 32 + length + (length / 6);
   }
 
-  public void finish()
-    throws IOException {
+  public static int crc32c(Slice data, CompressionType type) {
+    PureJavaCrc32C crc32c = new PureJavaCrc32C();
+    crc32c.update(data.getRawArray(), data.getRawOffset(), data.length());
+    crc32c.update(type.persistentId() & 0xFF);
+    return crc32c.getMaskedValue();
+  }
+
+  public long getEntryCount() {
+    return entryCount;
+  }
+
+  public long getFileSize() throws IOException {
+    return position + dataBlockBuilder.currentSizeEstimate();
+  }
+
+  public void add(BlockEntry blockEntry) throws IOException {
+    requireNonNull(blockEntry, "blockEntry is null");
+    add(blockEntry.getKey(), blockEntry.getValue());
+  }
+
+  public void add(Slice key, Slice value) throws IOException {
+    requireNonNull(key, "key is null");
+    requireNonNull(value, "value is null");
+
+    checkState(!closed, "table is finished");
+
+    if (entryCount > 0) {
+      assert (userComparator.compare(key, lastKey) > 0) : "key must be greater than last key";
+    }
+
+    // If we just wrote a block, we can now add the handle to index block
+    if (pendingIndexEntry) {
+      checkState(
+          dataBlockBuilder.isEmpty(),
+          "Internal error: Table has a pending index entry but data block builder is empty"
+      );
+
+      Slice shortestSeparator = userComparator.findShortestSeparator(lastKey, key);
+
+      Slice handleEncoding = BlockHandle.writeBlockHandle(pendingHandle);
+      indexBlockBuilder.add(shortestSeparator, handleEncoding);
+      pendingIndexEntry = false;
+    }
+
+    lastKey = key;
+    entryCount++;
+    dataBlockBuilder.add(key, value);
+
+    int estimatedBlockSize = dataBlockBuilder.currentSizeEstimate();
+    if (estimatedBlockSize >= blockSize) {
+      flush();
+    }
+  }
+
+  private void flush() throws IOException {
+    checkState(!closed, "table is finished");
+    if (dataBlockBuilder.isEmpty()) {
+      return;
+    }
+
+    checkState(
+        !pendingIndexEntry,
+        "Internal error: Table already has a pending index entry to flush"
+    );
+
+    pendingHandle = writeBlock(dataBlockBuilder);
+    pendingIndexEntry = true;
+  }
+
+  private BlockHandle writeBlock(BlockBuilder blockBuilder) throws IOException {
+    // close the block
+    Slice raw = blockBuilder.finish();
+
+    // attempt to compress the block
+    Slice blockContents = raw;
+    CompressionType blockCompressionType = CompressionType.NONE;
+    if (compressionType == CompressionType.SNAPPY) {
+      ensureCompressedOutputCapacity(maxCompressedLength(raw.length()));
+      try {
+        int compressedSize = Snappy.compress(raw.getRawArray(),
+            raw.getRawOffset(),
+            raw.length(),
+            compressedOutput.getRawArray(),
+            0
+        );
+
+        // Don't use the compressed data if compressed less than 12.5%,
+        if (compressedSize < raw.length() - (raw.length() / 8)) {
+          blockContents = compressedOutput.slice(0, compressedSize);
+          blockCompressionType = CompressionType.SNAPPY;
+        }
+      } catch (IOException ignored) {
+        // compression failed, so just store uncompressed form
+      }
+    }
+
+    // create block trailer
+    BlockTrailer blockTrailer =
+        new BlockTrailer(blockCompressionType, crc32c(blockContents, blockCompressionType));
+    Slice trailer = BlockTrailer.writeBlockTrailer(blockTrailer);
+
+    // create a handle to this block
+    BlockHandle blockHandle = new BlockHandle(position, blockContents.length());
+
+    // write data and trailer
+    position += fileChannel.write(new ByteBuffer[] {
+        blockContents.toByteBuffer(), trailer.toByteBuffer()
+    });
+
+    // clean up state
+    blockBuilder.reset();
+
+    return blockHandle;
+  }
+
+  public void finish() throws IOException {
     checkState(!closed, "table is finished");
 
     // flush current data block
@@ -230,7 +253,8 @@ public class TableBuilder {
     closed = true;
 
     // write (empty) meta index block
-    BlockBuilder metaIndexBlockBuilder = new BlockBuilder(256, blockRestartInterval, new BytewiseComparator());
+    BlockBuilder metaIndexBlockBuilder =
+        new BlockBuilder(256, blockRestartInterval, new BytewiseComparator());
     // TODO(postrelease): Add stats and other meta blocks
     BlockHandle metaindexBlockHandle = writeBlock(metaIndexBlockBuilder);
 
@@ -255,13 +279,6 @@ public class TableBuilder {
   public void abandon() {
     checkState(!closed, "table is finished");
     closed = true;
-  }
-
-  public static int crc32c(Slice data, CompressionType type) {
-    PureJavaCrc32C crc32c = new PureJavaCrc32C();
-    crc32c.update(data.getRawArray(), data.getRawOffset(), data.length());
-    crc32c.update(type.persistentId() & 0xFF);
-    return crc32c.getMaskedValue();
   }
 
   public void ensureCompressedOutputCapacity(int capacity) {

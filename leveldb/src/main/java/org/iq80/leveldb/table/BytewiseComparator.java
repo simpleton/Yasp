@@ -19,8 +19,7 @@ package org.iq80.leveldb.table;
 
 import org.iq80.leveldb.util.Slice;
 
-public class BytewiseComparator
-  implements UserComparator {
+public class BytewiseComparator implements UserComparator {
   @Override
   public String name() {
     return "leveldb.BytewiseComparator";
@@ -33,8 +32,7 @@ public class BytewiseComparator
 
   @Override
   public Slice findShortestSeparator(
-    Slice start,
-    Slice limit) {
+      Slice start, Slice limit) {
     // Find length of common prefix
     int sharedBytes = BlockBuilder.calculateSharedBytes(start, limit);
 

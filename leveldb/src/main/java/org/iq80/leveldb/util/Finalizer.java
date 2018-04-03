@@ -18,7 +18,6 @@
 package org.iq80.leveldb.util;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
 import java.util.concurrent.Callable;
@@ -30,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 
 public class Finalizer<T> {
   public static final FinalizerMonitor IGNORE_FINALIZER_MONITOR = new FinalizerMonitor() {
@@ -42,7 +41,8 @@ public class Finalizer<T> {
   private final int threads;
   private final FinalizerMonitor monitor;
 
-  private final ConcurrentHashMap<FinalizerPhantomReference<T>, Object> references = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<FinalizerPhantomReference<T>, Object> references =
+      new ConcurrentHashMap<>();
   private final ReferenceQueue<T> referenceQueue = new ReferenceQueue<>();
   private final AtomicBoolean destroyed = new AtomicBoolean();
   private ExecutorService executor;
@@ -68,10 +68,10 @@ public class Finalizer<T> {
 
     if (executor == null) {
       // create executor
-      ThreadFactory threadFactory = new ThreadFactoryBuilder()
-        .setNameFormat("FinalizerQueueProcessor-%d")
-        .setDaemon(true)
-        .build();
+      ThreadFactory threadFactory =
+          new ThreadFactoryBuilder().setNameFormat("FinalizerQueueProcessor-%d")
+              .setDaemon(true)
+              .build();
       executor = Executors.newFixedThreadPool(threads, threadFactory);
 
       // start queue processor jobs
@@ -81,7 +81,8 @@ public class Finalizer<T> {
     }
 
     // create a reference to the item so we are notified when it is garbage collected
-    FinalizerPhantomReference<T> reference = new FinalizerPhantomReference<>(item, referenceQueue, cleanup);
+    FinalizerPhantomReference<T> reference =
+        new FinalizerPhantomReference<>(item, referenceQueue, cleanup);
 
     // we must keep a strong reference to the reference object so we are notified when the item
     // is no longer reachable (if the reference object is garbage collected we are never notified)
@@ -105,26 +106,26 @@ public class Finalizer<T> {
     void unexpectedException(Throwable throwable);
   }
 
-  private static class FinalizerPhantomReference<T>
-    extends PhantomReference<T> {
+  private static class FinalizerPhantomReference<T> extends PhantomReference<T> {
     private final AtomicBoolean cleaned = new AtomicBoolean(false);
     private final Callable<?> cleanup;
 
-    private FinalizerPhantomReference(T referent, ReferenceQueue<? super T> queue, Callable<?> cleanup) {
+    private FinalizerPhantomReference(
+        T referent,
+        ReferenceQueue<? super T> queue,
+        Callable<?> cleanup) {
       super(referent, queue);
       this.cleanup = cleanup;
     }
 
-    private void cleanup()
-      throws Exception {
+    private void cleanup() throws Exception {
       if (cleaned.compareAndSet(false, true)) {
         cleanup.call();
       }
     }
   }
 
-  private class FinalizerQueueProcessor
-    implements Runnable {
+  private class FinalizerQueueProcessor implements Runnable {
     @Override
     public void run() {
       while (!destroyed.get()) {

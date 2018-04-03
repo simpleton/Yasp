@@ -17,21 +17,19 @@
  */
 package org.iq80.leveldb.util;
 
-import org.iq80.leveldb.impl.InternalKey;
-import org.iq80.leveldb.impl.MemTable.MemTableIterator;
-import org.iq80.leveldb.impl.SeekingIterator;
-
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import org.iq80.leveldb.impl.InternalKey;
+import org.iq80.leveldb.impl.MemTable.MemTableIterator;
+import org.iq80.leveldb.impl.SeekingIterator;
 
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 
-public final class DbIterator
-  extends AbstractSeekingIterator<InternalKey, Slice>
-  implements InternalIterator {
+public final class DbIterator extends AbstractSeekingIterator<InternalKey, Slice>
+    implements InternalIterator {
   /*
    * NOTE: This code has been specifically tuned for performance of the DB
    * iterator methods.  Before committing changes to this code, make sure
@@ -58,11 +56,12 @@ public final class DbIterator
   private final ComparableIterator[] heap;
   private int heapSize;
 
-  public DbIterator(MemTableIterator memTableIterator,
-                    MemTableIterator immutableMemTableIterator,
-                    List<InternalTableIterator> level0Files,
-                    List<LevelIterator> levels,
-                    Comparator<InternalKey> comparator) {
+  public DbIterator(
+      MemTableIterator memTableIterator,
+      MemTableIterator immutableMemTableIterator,
+      List<InternalTableIterator> level0Files,
+      List<LevelIterator> levels,
+      Comparator<InternalKey> comparator) {
     this.memTableIterator = memTableIterator;
     this.immutableMemTableIterator = immutableMemTableIterator;
     this.level0Files = level0Files;
@@ -142,7 +141,12 @@ public final class DbIterator
       heapAdd(new ComparableIterator(memTableIterator, comparator, i++, memTableIterator.next()));
     }
     if (immutableMemTableIterator != null && immutableMemTableIterator.hasNext()) {
-      heapAdd(new ComparableIterator(immutableMemTableIterator, comparator, i++, immutableMemTableIterator.next()));
+      heapAdd(new ComparableIterator(
+          immutableMemTableIterator,
+          comparator,
+          i++,
+          immutableMemTableIterator.next()
+      ));
     }
     for (InternalTableIterator level0File : level0Files) {
       if (level0File.hasNext()) {
@@ -183,8 +187,7 @@ public final class DbIterator
     ComparableIterator target = heap[rootIndex];
     int childIndex;
     while ((childIndex = rootIndex * 2 + 1) < heapSize) {
-      if (childIndex + 1 < heapSize
-        && heap[childIndex + 1].compareTo(heap[childIndex]) < 0) {
+      if (childIndex + 1 < heapSize && heap[childIndex + 1].compareTo(heap[childIndex]) < 0) {
         childIndex++;
       }
       if (target.compareTo(heap[childIndex]) <= 0) {
@@ -210,13 +213,17 @@ public final class DbIterator
   }
 
   private static class ComparableIterator
-    implements Iterator<Entry<InternalKey, Slice>>, Comparable<ComparableIterator> {
+      implements Iterator<Entry<InternalKey, Slice>>, Comparable<ComparableIterator> {
     private final SeekingIterator<InternalKey, Slice> iterator;
     private final Comparator<InternalKey> comparator;
     private final int ordinal;
     private Entry<InternalKey, Slice> nextElement;
 
-    private ComparableIterator(SeekingIterator<InternalKey, Slice> iterator, Comparator<InternalKey> comparator, int ordinal, Entry<InternalKey, Slice> nextElement) {
+    private ComparableIterator(
+        SeekingIterator<InternalKey, Slice> iterator,
+        Comparator<InternalKey> comparator,
+        int ordinal,
+        Entry<InternalKey, Slice> nextElement) {
       this.iterator = iterator;
       this.comparator = comparator;
       this.ordinal = ordinal;
@@ -262,7 +269,8 @@ public final class DbIterator
       if (ordinal != comparableIterator.ordinal) {
         return false;
       }
-      if (nextElement != null ? !nextElement.equals(comparableIterator.nextElement) : comparableIterator.nextElement != null) {
+      if (nextElement != null ? !nextElement.equals(comparableIterator.nextElement)
+          : comparableIterator.nextElement != null) {
         return false;
       }
 

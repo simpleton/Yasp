@@ -17,24 +17,25 @@
  */
 package org.iq80.leveldb.util;
 
+import java.util.List;
+import java.util.Map.Entry;
 import org.iq80.leveldb.impl.FileMetaData;
 import org.iq80.leveldb.impl.InternalKey;
 import org.iq80.leveldb.impl.InternalKeyComparator;
 import org.iq80.leveldb.impl.TableCache;
 
-import java.util.List;
-import java.util.Map.Entry;
-
-public final class LevelIterator
-  extends AbstractSeekingIterator<InternalKey, Slice>
-  implements InternalIterator {
+public final class LevelIterator extends AbstractSeekingIterator<InternalKey, Slice>
+    implements InternalIterator {
   private final TableCache tableCache;
   private final List<FileMetaData> files;
   private final InternalKeyComparator comparator;
   private InternalTableIterator current;
   private int index;
 
-  public LevelIterator(TableCache tableCache, List<FileMetaData> files, InternalKeyComparator comparator) {
+  public LevelIterator(
+      TableCache tableCache,
+      List<FileMetaData> files,
+      InternalKeyComparator comparator) {
     this.tableCache = tableCache;
     this.files = files;
     this.comparator = comparator;
@@ -76,7 +77,8 @@ public final class LevelIterator
 
     // if the index is now pointing to the last block in the file, check if the largest key
     // in the block is than the the target key.  If so, we need to seek beyond the end of this file
-    if (index == files.size() - 1 && comparator.compare(files.get(index).getLargest(), targetKey) < 0) {
+    if (index == files.size() - 1
+        && comparator.compare(files.get(index).getLargest(), targetKey) < 0) {
       index++;
     }
 

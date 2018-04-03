@@ -29,9 +29,31 @@ import java.nio.charset.CodingErrorAction;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 
 public final class Slices {
+  /**
+   * A buffer whose capacity is {@code 0}.
+   */
+  public static final Slice EMPTY_SLICE = new Slice(0);
+  private static final ThreadLocal<Map<Charset, CharsetEncoder>> encoders =
+      new ThreadLocal<Map<Charset, CharsetEncoder>>() {
+        @Override
+        protected Map<Charset, CharsetEncoder> initialValue() {
+          return new IdentityHashMap<>();
+        }
+      };
+  private static final ThreadLocal<Map<Charset, CharsetDecoder>> decoders =
+      new ThreadLocal<Map<Charset, CharsetDecoder>>() {
+        @Override
+        protected Map<Charset, CharsetDecoder> initialValue() {
+          return new IdentityHashMap<>();
+        }
+      };
+
+  private Slices() {
+  }
+
   public static Slice readLengthPrefixedBytes(SliceInput sliceInput) {
     int length = VariableLengthQuantity.readVariableLengthInt(sliceInput);
     return sliceInput.readBytes(length);
@@ -40,14 +62,6 @@ public final class Slices {
   public static void writeLengthPrefixedBytes(SliceOutput sliceOutput, Slice value) {
     VariableLengthQuantity.writeVariableLengthInt(value.length(), sliceOutput);
     sliceOutput.writeBytes(value);
-  }
-
-  /**
-   * A buffer whose capacity is {@code 0}.
-   */
-  public static final Slice EMPTY_SLICE = new Slice(0);
-
-  private Slices() {
   }
 
   public static Slice ensureSize(Slice existingSlice, int minWritableBytes) {
@@ -92,7 +106,11 @@ public final class Slices {
   public static Slice copiedBuffer(ByteBuffer source, int sourceOffset, int length) {
     requireNonNull(source, "source is null");
     int newPosition = source.position() + sourceOffset;
-    return copiedBuffer((ByteBuffer) source.duplicate().order(ByteOrder.LITTLE_ENDIAN).clear().limit(newPosition + length).position(newPosition));
+    return copiedBuffer((ByteBuffer) source.duplicate()
+        .order(ByteOrder.LITTLE_ENDIAN)
+        .clear()
+        .limit(newPosition + length)
+        .position(newPosition));
   }
 
   public static Slice copiedBuffer(ByteBuffer source) {
@@ -111,8 +129,8 @@ public final class Slices {
 
   public static ByteBuffer encodeString(CharBuffer src, Charset charset) {
     CharsetEncoder encoder = getEncoder(charset);
-    ByteBuffer dst = ByteBuffer.allocate(
-      (int) ((double) src.remaining() * encoder.maxBytesPerChar()));
+    ByteBuffer dst =
+        ByteBuffer.allocate((int) ((double) src.remaining() * encoder.maxBytesPerChar()));
     try {
       CoderResult cr = encoder.encode(src, dst, true);
       if (!cr.isUnderflow()) {
@@ -131,8 +149,8 @@ public final class Slices {
 
   public static String decodeString(ByteBuffer src, Charset charset) {
     CharsetDecoder decoder = getDecoder(charset);
-    CharBuffer dst = CharBuffer.allocate(
-      (int) ((double) src.remaining() * decoder.maxCharsPerByte()));
+    CharBuffer dst =
+        CharBuffer.allocate((int) ((double) src.remaining() * decoder.maxCharsPerByte()));
     try {
       CoderResult cr = decoder.decode(src, dst, true);
       if (!cr.isUnderflow()) {
@@ -147,22 +165,6 @@ public final class Slices {
     }
     return dst.flip().toString();
   }
-
-  private static final ThreadLocal<Map<Charset, CharsetEncoder>> encoders =
-    new ThreadLocal<Map<Charset, CharsetEncoder>>() {
-      @Override
-      protected Map<Charset, CharsetEncoder> initialValue() {
-        return new IdentityHashMap<>();
-      }
-    };
-
-  private static final ThreadLocal<Map<Charset, CharsetDecoder>> decoders =
-    new ThreadLocal<Map<Charset, CharsetDecoder>>() {
-      @Override
-      protected Map<Charset, CharsetDecoder> initialValue() {
-        return new IdentityHashMap<>();
-      }
-    };
 
   /**
    * Returns a cached thread-local {@link CharsetEncoder} for the specified

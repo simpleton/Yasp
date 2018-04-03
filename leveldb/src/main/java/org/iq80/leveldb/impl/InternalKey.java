@@ -22,14 +22,15 @@ import org.iq80.leveldb.util.SliceOutput;
 import org.iq80.leveldb.util.Slices;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.StandardCharsets.UTF_8;
+import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_LONG;
 
 public class InternalKey {
   private final Slice userKey;
   private final long sequenceNumber;
   private final ValueType valueType;
+  private int hash;
 
   public InternalKey(Slice userKey, long sequenceNumber, ValueType valueType) {
     requireNonNull(userKey, "userKey is null");
@@ -52,6 +53,10 @@ public class InternalKey {
 
   public InternalKey(byte[] data) {
     this(Slices.wrappedBuffer(data));
+  }
+
+  private static Slice getUserKey(Slice data) {
+    return data.slice(0, data.length() - SIZE_OF_LONG);
   }
 
   public Slice getUserKey() {
@@ -98,8 +103,6 @@ public class InternalKey {
     return true;
   }
 
-  private int hash;
-
   @Override
   public int hashCode() {
     if (hash == 0) {
@@ -123,9 +126,5 @@ public class InternalKey {
     sb.append(", valueType=").append(getValueType());
     sb.append('}');
     return sb.toString();
-  }
-
-  private static Slice getUserKey(Slice data) {
-    return data.slice(0, data.length() - SIZE_OF_LONG);
   }
 }

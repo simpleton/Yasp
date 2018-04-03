@@ -18,25 +18,23 @@
 package org.iq80.leveldb.table;
 
 import com.google.common.base.Throwables;
-
-import org.iq80.leveldb.impl.SeekingIterable;
-import org.iq80.leveldb.util.Closeables;
-import org.iq80.leveldb.util.Slice;
-import org.iq80.leveldb.util.TableIterator;
-import org.iq80.leveldb.util.VariableLengthQuantity;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Comparator;
 import java.util.concurrent.Callable;
+import org.iq80.leveldb.impl.SeekingIterable;
+import org.iq80.leveldb.util.Closeables;
+import org.iq80.leveldb.util.Slice;
+import org.iq80.leveldb.util.TableIterator;
+import org.iq80.leveldb.util.VariableLengthQuantity;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 
-public abstract class Table
-  implements SeekingIterable<Slice, Slice> {
+public abstract class Table implements SeekingIterable<Slice, Slice> {
+  protected static ByteBuffer uncompressedScratch = ByteBuffer.allocateDirect(4 * 1024 * 1024);
   protected final String name;
   protected final FileChannel fileChannel;
   protected final Comparator<Slice> comparator;
@@ -44,12 +42,19 @@ public abstract class Table
   protected final Block indexBlock;
   protected final BlockHandle metaindexBlockHandle;
 
-  public Table(String name, FileChannel fileChannel, Comparator<Slice> comparator, boolean verifyChecksums)
-    throws IOException {
+  public Table(
+      String name,
+      FileChannel fileChannel,
+      Comparator<Slice> comparator,
+      boolean verifyChecksums) throws IOException {
     requireNonNull(name, "name is null");
     requireNonNull(fileChannel, "fileChannel is null");
     long size = fileChannel.size();
-    checkArgument(size >= Footer.ENCODED_LENGTH, "File is corrupt: size must be at least %s bytes", Footer.ENCODED_LENGTH);
+    checkArgument(
+        size >= Footer.ENCODED_LENGTH,
+        "File is corrupt: size must be at least %s bytes",
+        Footer.ENCODED_LENGTH
+    );
     requireNonNull(comparator, "comparator is null");
 
     this.name = name;
@@ -62,8 +67,7 @@ public abstract class Table
     metaindexBlockHandle = footer.getMetaindexBlockHandle();
   }
 
-  protected abstract Footer init()
-    throws IOException;
+  protected abstract Footer init() throws IOException;
 
   @Override
   public TableIterator iterator() {
@@ -81,13 +85,9 @@ public abstract class Table
     return dataBlock;
   }
 
-  protected static ByteBuffer uncompressedScratch = ByteBuffer.allocateDirect(4 * 1024 * 1024);
+  protected abstract Block readBlock(BlockHandle blockHandle) throws IOException;
 
-  protected abstract Block readBlock(BlockHandle blockHandle)
-    throws IOException;
-
-  protected int uncompressedLength(ByteBuffer data)
-    throws IOException {
+  protected int uncompressedLength(ByteBuffer data) throws IOException {
     int length = VariableLengthQuantity.readVariableLengthInt(data.duplicate());
     return length;
   }
@@ -129,8 +129,7 @@ public abstract class Table
     return new Closer(fileChannel);
   }
 
-  private static class Closer
-    implements Callable<Void> {
+  private static class Closer implements Callable<Void> {
     private final Closeable closeable;
 
     public Closer(Closeable closeable) {

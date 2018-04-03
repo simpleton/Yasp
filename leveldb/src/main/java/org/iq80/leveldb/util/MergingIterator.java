@@ -17,22 +17,22 @@
  */
 package org.iq80.leveldb.util;
 
-import org.iq80.leveldb.impl.InternalKey;
-
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
+import org.iq80.leveldb.impl.InternalKey;
 
-public final class MergingIterator
-  extends AbstractSeekingIterator<InternalKey, Slice> {
+public final class MergingIterator extends AbstractSeekingIterator<InternalKey, Slice> {
   private final List<? extends InternalIterator> levels;
   private final PriorityQueue<ComparableIterator> priorityQueue;
   private final Comparator<InternalKey> comparator;
 
-  public MergingIterator(List<? extends InternalIterator> levels, Comparator<InternalKey> comparator) {
+  public MergingIterator(
+      List<? extends InternalIterator> levels,
+      Comparator<InternalKey> comparator) {
     this.levels = levels;
     this.comparator = comparator;
 
@@ -89,13 +89,17 @@ public final class MergingIterator
   }
 
   private static class ComparableIterator
-    implements Iterator<Entry<InternalKey, Slice>>, Comparable<ComparableIterator> {
+      implements Iterator<Entry<InternalKey, Slice>>, Comparable<ComparableIterator> {
     private final InternalIterator iterator;
     private final Comparator<InternalKey> comparator;
     private final int ordinal;
     private Entry<InternalKey, Slice> nextElement;
 
-    private ComparableIterator(InternalIterator iterator, Comparator<InternalKey> comparator, int ordinal, Entry<InternalKey, Slice> nextElement) {
+    private ComparableIterator(
+        InternalIterator iterator,
+        Comparator<InternalKey> comparator,
+        int ordinal,
+        Entry<InternalKey, Slice> nextElement) {
       this.iterator = iterator;
       this.comparator = comparator;
       this.ordinal = ordinal;
@@ -141,7 +145,8 @@ public final class MergingIterator
       if (ordinal != comparableIterator.ordinal) {
         return false;
       }
-      if (nextElement != null ? !nextElement.equals(comparableIterator.nextElement) : comparableIterator.nextElement != null) {
+      if (nextElement != null ? !nextElement.equals(comparableIterator.nextElement)
+          : comparableIterator.nextElement != null) {
         return false;
       }
 

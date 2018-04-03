@@ -20,8 +20,7 @@ package org.iq80.leveldb.table;
 import org.iq80.leveldb.DBComparator;
 import org.iq80.leveldb.util.Slice;
 
-public class CustomUserComparator
-  implements UserComparator {
+public class CustomUserComparator implements UserComparator {
   private final DBComparator comparator;
 
   public CustomUserComparator(DBComparator comparator) {

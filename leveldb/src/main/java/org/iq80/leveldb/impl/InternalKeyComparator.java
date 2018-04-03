@@ -17,14 +17,12 @@
  */
 package org.iq80.leveldb.impl;
 
-import org.iq80.leveldb.table.UserComparator;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+import org.iq80.leveldb.table.UserComparator;
 
-public class InternalKeyComparator
-  implements Comparator<InternalKey> {
+public class InternalKeyComparator implements Comparator<InternalKey> {
   private final UserComparator userComparator;
 
   public InternalKeyComparator(UserComparator userComparator) {
@@ -46,7 +44,9 @@ public class InternalKeyComparator
       return result;
     }
 
-    return Long.compare(right.getSequenceNumber(), left.getSequenceNumber()); // reverse sorted version numbers
+    return Long.compare(right.getSequenceNumber(),
+        left.getSequenceNumber()
+    ); // reverse sorted version numbers
   }
 
   /**

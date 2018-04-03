@@ -18,6 +18,9 @@
 package org.iq80.leveldb.impl;
 
 public final class LogMonitors {
+  private LogMonitors() {
+  }
+
   public static LogMonitor throwExceptionMonitor() {
     return new LogMonitor() {
       @Override
@@ -46,8 +49,5 @@ public final class LogMonitors {
         reason.printStackTrace();
       }
     };
-  }
-
-  private LogMonitors() {
   }
 }

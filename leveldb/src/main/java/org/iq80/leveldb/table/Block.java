@@ -17,14 +17,13 @@
  */
 package org.iq80.leveldb.table;
 
+import java.util.Comparator;
 import org.iq80.leveldb.impl.SeekingIterable;
 import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.Slices;
 
-import java.util.Comparator;
-
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_INT;
 
 /**
@@ -61,8 +60,7 @@ import static org.iq80.leveldb.util.SizeOf.SIZE_OF_INT;
  * </tbody>
  * </table>
  */
-public class Block
-  implements SeekingIterable<Slice, Slice> {
+public class Block implements SeekingIterable<Slice, Slice> {
   private final Slice block;
   private final Comparator<Slice> comparator;
 
@@ -71,7 +69,11 @@ public class Block
 
   public Block(Slice block, Comparator<Slice> comparator) {
     requireNonNull(block, "block is null");
-    checkArgument(block.length() >= SIZE_OF_INT, "Block is corrupt: size must be at least %s block", SIZE_OF_INT);
+    checkArgument(
+        block.length() >= SIZE_OF_INT,
+        "Block is corrupt: size must be at least %s block",
+        SIZE_OF_INT
+    );
     requireNonNull(comparator, "comparator is null");
 
     block = block.slice();
@@ -88,7 +90,10 @@ public class Block
     if (restartCount > 0) {
       // restarts are written at the end of the block
       int restartOffset = block.length() - (1 + restartCount) * SIZE_OF_INT;
-      checkArgument(restartOffset < block.length() - SIZE_OF_INT, "Block is corrupt: restart offset count is greater than block size");
+      checkArgument(
+          restartOffset < block.length() - SIZE_OF_INT,
+          "Block is corrupt: restart offset count is greater than block size"
+      );
       restartPositions = block.slice(restartOffset, restartCount * SIZE_OF_INT);
 
       // data starts at 0 and extends to the restart index

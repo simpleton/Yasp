@@ -19,7 +19,7 @@ package org.iq80.leveldb.util;
 
 import org.testng.annotations.Test;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.simsun.common.base.StandardCharsets.UTF_8;
 import static org.iq80.leveldb.util.SliceComparator.SLICE_COMPARATOR;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;

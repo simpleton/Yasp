@@ -18,7 +18,7 @@
 package org.iq80.leveldb.impl;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 
 public final class SequenceNumber {
   // We leave eight bits empty at the bottom so a type and sequence#
@@ -29,7 +29,9 @@ public final class SequenceNumber {
   }
 
   public static long packSequenceAndValueType(long sequence, ValueType valueType) {
-    checkArgument(sequence <= MAX_SEQUENCE_NUMBER, "Sequence number is greater than MAX_SEQUENCE_NUMBER");
+    checkArgument(sequence <= MAX_SEQUENCE_NUMBER,
+        "Sequence number is greater than MAX_SEQUENCE_NUMBER"
+    );
     requireNonNull(valueType, "valueType is null");
 
     return (sequence << 8) | valueType.getPersistentId();

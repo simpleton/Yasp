@@ -17,17 +17,15 @@
  */
 package org.iq80.leveldb.impl;
 
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.iq80.leveldb.DBIterator;
 import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.Slices;
 
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
+import static com.simsun.common.base.Utils.requireNonNull;
 
-import static java.util.Objects.requireNonNull;
-
-public class SeekingIteratorAdapter
-  implements DBIterator {
+public class SeekingIteratorAdapter implements DBIterator {
   private final SnapshotSeekingIterator seekingIterator;
   private final AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -102,8 +100,7 @@ public class SeekingIteratorAdapter
     throw new UnsupportedOperationException();
   }
 
-  public static class DbEntry
-    implements Entry<byte[], byte[]> {
+  public static class DbEntry implements Entry<byte[], byte[]> {
     private final Slice key;
     private final Slice value;
 
@@ -141,8 +138,7 @@ public class SeekingIteratorAdapter
     public boolean equals(Object object) {
       if (object instanceof Entry) {
         Entry<?, ?> that = (Entry<?, ?>) object;
-        return key.equals(that.getKey()) &&
-          value.equals(that.getValue());
+        return key.equals(that.getKey()) && value.equals(that.getValue());
       }
       return false;
     }

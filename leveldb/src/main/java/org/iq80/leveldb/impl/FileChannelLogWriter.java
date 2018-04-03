@@ -17,12 +17,6 @@
  */
 package org.iq80.leveldb.impl;
 
-import org.iq80.leveldb.util.Closeables;
-import org.iq80.leveldb.util.Slice;
-import org.iq80.leveldb.util.SliceInput;
-import org.iq80.leveldb.util.SliceOutput;
-import org.iq80.leveldb.util.Slices;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -30,15 +24,19 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.iq80.leveldb.util.Closeables;
+import org.iq80.leveldb.util.Slice;
+import org.iq80.leveldb.util.SliceInput;
+import org.iq80.leveldb.util.SliceOutput;
+import org.iq80.leveldb.util.Slices;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.impl.LogConstants.BLOCK_SIZE;
 import static org.iq80.leveldb.impl.LogConstants.HEADER_SIZE;
 
-public class FileChannelLogWriter
-  implements LogWriter {
+public class FileChannelLogWriter implements LogWriter {
   private final File file;
   private final long fileNumber;
   private final FileChannel fileChannel;
@@ -49,8 +47,7 @@ public class FileChannelLogWriter
    */
   private int blockOffset;
 
-  public FileChannelLogWriter(File file, long fileNumber)
-    throws FileNotFoundException {
+  public FileChannelLogWriter(File file, long fileNumber) throws FileNotFoundException {
     requireNonNull(file, "file is null");
     checkArgument(fileNumber >= 0, "fileNumber is negative");
 
@@ -101,8 +98,7 @@ public class FileChannelLogWriter
 
   // Writes a stream of chunks such that no chunk is split across a block boundary
   @Override
-  public synchronized void addRecord(Slice record, boolean force)
-    throws IOException {
+  public synchronized void addRecord(Slice record, boolean force) throws IOException {
     checkState(!closed.get(), "Log has been closed");
 
     SliceInput sliceInput = record.input();
@@ -168,8 +164,7 @@ public class FileChannelLogWriter
     }
   }
 
-  private void writeChunk(LogChunkType type, Slice slice)
-    throws IOException {
+  private void writeChunk(LogChunkType type, Slice slice) throws IOException {
     checkArgument(slice.length() <= 0xffff, "length %s is larger than two bytes", slice.length());
     checkArgument(blockOffset + HEADER_SIZE <= BLOCK_SIZE);
 
@@ -184,7 +179,11 @@ public class FileChannelLogWriter
   }
 
   private Slice newLogRecordHeader(LogChunkType type, Slice slice, int length) {
-    int crc = Logs.getChunkChecksum(type.getPersistentId(), slice.getRawArray(), slice.getRawOffset(), length);
+    int crc = Logs.getChunkChecksum(type.getPersistentId(),
+        slice.getRawArray(),
+        slice.getRawOffset(),
+        length
+    );
 
     // Format the header
     SliceOutput header = Slices.allocate(HEADER_SIZE).output();

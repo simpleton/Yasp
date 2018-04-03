@@ -18,25 +18,22 @@
 package org.iq80.leveldb.impl;
 
 import com.google.common.base.Throwables;
-
-import org.iq80.leveldb.util.Closeables;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import org.iq80.leveldb.util.Closeables;
 
+import static com.simsun.common.base.Utils.requireNonNull;
 import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
 
 public class DbLock {
   private final File lockFile;
   private final FileChannel channel;
   private final FileLock lock;
 
-  public DbLock(File lockFile)
-    throws IOException {
+  public DbLock(File lockFile) throws IOException {
     requireNonNull(lockFile, "lockFile is null");
     this.lockFile = lockFile;
 

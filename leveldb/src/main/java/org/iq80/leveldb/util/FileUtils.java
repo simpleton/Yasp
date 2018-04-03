@@ -19,13 +19,12 @@ package org.iq80.leveldb.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 
 public final class FileUtils {
   private static final int TEMP_DIR_ATTEMPTS = 10000;
@@ -40,9 +39,9 @@ public final class FileUtils {
       File parentFile = file.getParentFile();
       // a symbolic link has a different name between the canonical and absolute path
       return !canonicalFile.getName().equals(absoluteFile.getName()) ||
-        // or the canonical parent path is not the same as the file's parent path,
-        // provided the file has a parent path
-        parentFile != null && !parentFile.getCanonicalPath().equals(canonicalFile.getParent());
+             // or the canonical parent path is not the same as the file's parent path,
+             // provided the file has a parent path
+             parentFile != null && !parentFile.getCanonicalPath().equals(canonicalFile.getParent());
     } catch (IOException e) {
       // error on the side of caution
       return true;
@@ -83,8 +82,13 @@ public final class FileUtils {
       }
     }
     throw new IllegalStateException("Failed to create directory within "
-      + TEMP_DIR_ATTEMPTS + " attempts (tried "
-      + baseName + "0 to " + baseName + (TEMP_DIR_ATTEMPTS - 1) + ')');
+                                    + TEMP_DIR_ATTEMPTS
+                                    + " attempts (tried "
+                                    + baseName
+                                    + "0 to "
+                                    + baseName
+                                    + (TEMP_DIR_ATTEMPTS - 1)
+                                    + ')');
   }
 
   public static boolean deleteDirectoryContents(File directory) {

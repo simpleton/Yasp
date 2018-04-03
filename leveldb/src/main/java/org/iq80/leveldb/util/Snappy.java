@@ -20,7 +20,7 @@ package org.iq80.leveldb.util;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.simsun.common.base.StandardCharsets.UTF_8;
 
 /**
  * <p>
@@ -39,27 +39,80 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 public final class Snappy {
+  private static final SPI SNAPPY;
+
+  static {
+    SPI attempt = null;
+    String[] factories = System.getProperty("leveldb.snappy", "iq80,xerial").split(",");
+    for (int i = 0; i < factories.length && attempt == null; i++) {
+      String name = factories[i];
+      try {
+        name = name.trim();
+        if ("xerial".equals(name.toLowerCase())) {
+          name = "org.iq80.leveldb.util.Snappy$XerialSnappy";
+        } else if ("iq80".equals(name.toLowerCase())) {
+          name = "org.iq80.leveldb.util.Snappy$IQ80Snappy";
+        }
+        attempt =
+            (SPI) Thread.currentThread().getContextClassLoader().loadClass(name).newInstance();
+      } catch (Throwable e) {
+      }
+    }
+    SNAPPY = attempt;
+  }
+
   private Snappy() {
   }
 
+  public static boolean available() {
+    return SNAPPY != null;
+  }
+
+  public static void uncompress(ByteBuffer compressed, ByteBuffer uncompressed) throws IOException {
+    SNAPPY.uncompress(compressed, uncompressed);
+  }
+
+  public static void uncompress(
+      byte[] input,
+      int inputOffset,
+      int length,
+      byte[] output,
+      int outputOffset) throws IOException {
+    SNAPPY.uncompress(input, inputOffset, length, output, outputOffset);
+  }
+
+  public static int compress(
+      byte[] input,
+      int inputOffset,
+      int length,
+      byte[] output,
+      int outputOffset) throws IOException {
+    return SNAPPY.compress(input, inputOffset, length, output, outputOffset);
+  }
+
+  public static byte[] compress(String text) throws IOException {
+    return SNAPPY.compress(text);
+  }
+
+  public static int maxCompressedLength(int length) {
+    return SNAPPY.maxCompressedLength(length);
+  }
+
   public interface SPI {
-    int uncompress(ByteBuffer compressed, ByteBuffer uncompressed)
-      throws IOException;
+    int uncompress(ByteBuffer compressed, ByteBuffer uncompressed) throws IOException;
 
     int uncompress(byte[] input, int inputOffset, int length, byte[] output, int outputOffset)
-      throws IOException;
+        throws IOException;
 
     int compress(byte[] input, int inputOffset, int length, byte[] output, int outputOffset)
-      throws IOException;
+        throws IOException;
 
-    byte[] compress(String text)
-      throws IOException;
+    byte[] compress(String text) throws IOException;
 
     int maxCompressedLength(int length);
   }
 
-  public static class XerialSnappy
-    implements SPI {
+  public static class XerialSnappy implements SPI {
     static {
       // Make sure that the JNI libs are fully loaded.
       try {
@@ -70,26 +123,28 @@ public final class Snappy {
     }
 
     @Override
-    public int uncompress(ByteBuffer compressed, ByteBuffer uncompressed)
-      throws IOException {
+    public int uncompress(ByteBuffer compressed, ByteBuffer uncompressed) throws IOException {
       return org.xerial.snappy.Snappy.uncompress(compressed, uncompressed);
     }
 
     @Override
-    public int uncompress(byte[] input, int inputOffset, int length, byte[] output, int outputOffset)
-      throws IOException {
+    public int uncompress(
+        byte[] input,
+        int inputOffset,
+        int length,
+        byte[] output,
+        int outputOffset) throws IOException {
       return org.xerial.snappy.Snappy.uncompress(input, inputOffset, length, output, outputOffset);
     }
 
     @Override
     public int compress(byte[] input, int inputOffset, int length, byte[] output, int outputOffset)
-      throws IOException {
+        throws IOException {
       return org.xerial.snappy.Snappy.compress(input, inputOffset, length, output, outputOffset);
     }
 
     @Override
-    public byte[] compress(String text)
-      throws IOException {
+    public byte[] compress(String text) throws IOException {
       return org.xerial.snappy.Snappy.compress(text);
     }
 
@@ -99,8 +154,7 @@ public final class Snappy {
     }
   }
 
-  public static class IQ80Snappy
-    implements SPI {
+  public static class IQ80Snappy implements SPI {
     static {
       // Make sure that the library can fully load.
       try {
@@ -111,8 +165,7 @@ public final class Snappy {
     }
 
     @Override
-    public int uncompress(ByteBuffer compressed, ByteBuffer uncompressed)
-      throws IOException {
+    public int uncompress(ByteBuffer compressed, ByteBuffer uncompressed) throws IOException {
       byte[] input;
       int inputOffset;
       int length;
@@ -139,7 +192,8 @@ public final class Snappy {
         outputOffset = 0;
       }
 
-      int count = org.iq80.snappy.Snappy.uncompress(input, inputOffset, length, output, outputOffset);
+      int count =
+          org.iq80.snappy.Snappy.uncompress(input, inputOffset, length, output, outputOffset);
       if (uncompressed.hasArray()) {
         uncompressed.limit(uncompressed.position() + count);
       } else {
@@ -152,20 +206,23 @@ public final class Snappy {
     }
 
     @Override
-    public int uncompress(byte[] input, int inputOffset, int length, byte[] output, int outputOffset)
-      throws IOException {
+    public int uncompress(
+        byte[] input,
+        int inputOffset,
+        int length,
+        byte[] output,
+        int outputOffset) throws IOException {
       return org.iq80.snappy.Snappy.uncompress(input, inputOffset, length, output, outputOffset);
     }
 
     @Override
     public int compress(byte[] input, int inputOffset, int length, byte[] output, int outputOffset)
-      throws IOException {
+        throws IOException {
       return org.iq80.snappy.Snappy.compress(input, inputOffset, length, output, outputOffset);
     }
 
     @Override
-    public byte[] compress(String text)
-      throws IOException {
+    public byte[] compress(String text) throws IOException {
       byte[] uncomressed = text.getBytes(UTF_8);
       byte[] compressedOut = new byte[maxCompressedLength(uncomressed.length)];
       int compressedSize = compress(uncomressed, 0, uncomressed.length, compressedOut, 0);
@@ -178,54 +235,5 @@ public final class Snappy {
     public int maxCompressedLength(int length) {
       return org.iq80.snappy.Snappy.maxCompressedLength(length);
     }
-  }
-
-  private static final SPI SNAPPY;
-
-  static {
-    SPI attempt = null;
-    String[] factories = System.getProperty("leveldb.snappy", "iq80,xerial").split(",");
-    for (int i = 0; i < factories.length && attempt == null; i++) {
-      String name = factories[i];
-      try {
-        name = name.trim();
-        if ("xerial".equals(name.toLowerCase())) {
-          name = "org.iq80.leveldb.util.Snappy$XerialSnappy";
-        } else if ("iq80".equals(name.toLowerCase())) {
-          name = "org.iq80.leveldb.util.Snappy$IQ80Snappy";
-        }
-        attempt = (SPI) Thread.currentThread().getContextClassLoader().loadClass(name).newInstance();
-      } catch (Throwable e) {
-      }
-    }
-    SNAPPY = attempt;
-  }
-
-  public static boolean available() {
-    return SNAPPY != null;
-  }
-
-  public static void uncompress(ByteBuffer compressed, ByteBuffer uncompressed)
-    throws IOException {
-    SNAPPY.uncompress(compressed, uncompressed);
-  }
-
-  public static void uncompress(byte[] input, int inputOffset, int length, byte[] output, int outputOffset)
-    throws IOException {
-    SNAPPY.uncompress(input, inputOffset, length, output, outputOffset);
-  }
-
-  public static int compress(byte[] input, int inputOffset, int length, byte[] output, int outputOffset)
-    throws IOException {
-    return SNAPPY.compress(input, inputOffset, length, output, outputOffset);
-  }
-
-  public static byte[] compress(String text)
-    throws IOException {
-    return SNAPPY.compress(text);
-  }
-
-  public static int maxCompressedLength(int length) {
-    return SNAPPY.maxCompressedLength(length);
   }
 }

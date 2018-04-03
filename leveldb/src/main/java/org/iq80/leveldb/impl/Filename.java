@@ -17,29 +17,20 @@
  */
 package org.iq80.leveldb.impl;
 
-import com.google.common.collect.ImmutableList;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.StandardCharsets.UTF_8;
+import static com.simsun.common.base.Utils.requireNonNull;
 
 public final class Filename {
   private Filename() {
-  }
-
-  public enum FileType {
-    LOG,
-    DB_LOCK,
-    TABLE,
-    DESCRIPTOR,
-    CURRENT,
-    TEMP,
-    INFO_LOG  // Either the current one, or an old one
   }
 
   /**
@@ -143,8 +134,7 @@ public final class Filename {
    *
    * @return true if successful; false otherwise
    */
-  public static boolean setCurrentFile(File databaseDir, long descriptorNumber)
-    throws IOException {
+  public static boolean setCurrentFile(File databaseDir, long descriptorNumber) throws IOException {
     String manifest = descriptorFileName(descriptorNumber);
     String temp = tempFileName(descriptorNumber);
 
@@ -160,21 +150,23 @@ public final class Filename {
     return ok;
   }
 
-  private static void writeStringToFileSync(String str, File file)
-    throws IOException {
-    try (FileOutputStream stream = new FileOutputStream(file)) {
+  private static void writeStringToFileSync(String str, File file) throws IOException {
+    FileOutputStream stream = new FileOutputStream(file);
+    try {
       stream.write(str.getBytes(UTF_8));
       stream.flush();
       stream.getFD().sync();
+    } finally {
+      stream.close();
     }
   }
 
   public static List<File> listFiles(File dir) {
     File[] files = dir.listFiles();
     if (files == null) {
-      return ImmutableList.of();
+      return Collections.unmodifiableList(new ArrayList<File>());
     }
-    return ImmutableList.copyOf(files);
+    return Collections.unmodifiableList(new ArrayList<>(Arrays.asList(files)));
   }
 
   private static String makeFileName(long number, String suffix) {
@@ -189,6 +181,10 @@ public final class Filename {
 
   private static String removeSuffix(String value, String suffix) {
     return value.substring(0, value.length() - suffix.length());
+  }
+
+  public enum FileType {
+    LOG, DB_LOCK, TABLE, DESCRIPTOR, CURRENT, TEMP, INFO_LOG  // Either the current one, or an old one
   }
 
   public static class FileInfo {

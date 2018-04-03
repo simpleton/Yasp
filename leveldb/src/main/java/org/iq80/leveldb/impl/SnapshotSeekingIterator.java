@@ -18,21 +18,19 @@
 package org.iq80.leveldb.impl;
 
 import com.google.common.collect.Maps;
-
+import java.util.Comparator;
+import java.util.Map.Entry;
 import org.iq80.leveldb.util.AbstractSeekingIterator;
 import org.iq80.leveldb.util.DbIterator;
 import org.iq80.leveldb.util.Slice;
 
-import java.util.Comparator;
-import java.util.Map.Entry;
-
-public final class SnapshotSeekingIterator
-  extends AbstractSeekingIterator<Slice, Slice> {
+public final class SnapshotSeekingIterator extends AbstractSeekingIterator<Slice, Slice> {
   private final DbIterator iterator;
   private final SnapshotImpl snapshot;
   private final Comparator<Slice> userComparator;
 
-  public SnapshotSeekingIterator(DbIterator iterator, SnapshotImpl snapshot, Comparator<Slice> userComparator) {
+  public SnapshotSeekingIterator(
+      DbIterator iterator, SnapshotImpl snapshot, Comparator<Slice> userComparator) {
     this.iterator = iterator;
     this.snapshot = snapshot;
     this.userComparator = userComparator;
@@ -90,7 +88,8 @@ public final class SnapshotSeekingIterator
         deletedKey = internalKey.getUserKey();
       } else if (internalKey.getValueType() == ValueType.VALUE) {
         // is this value masked by a prior deletion record?
-        if (deletedKey == null || userComparator.compare(internalKey.getUserKey(), deletedKey) > 0) {
+        if (deletedKey == null
+            || userComparator.compare(internalKey.getUserKey(), deletedKey) > 0) {
           return;
         }
       }

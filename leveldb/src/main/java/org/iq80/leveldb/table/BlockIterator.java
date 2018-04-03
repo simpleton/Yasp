@@ -17,6 +17,8 @@
  */
 package org.iq80.leveldb.table;
 
+import java.util.Comparator;
+import java.util.NoSuchElementException;
 import org.iq80.leveldb.impl.SeekingIterator;
 import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.SliceInput;
@@ -24,17 +26,13 @@ import org.iq80.leveldb.util.SliceOutput;
 import org.iq80.leveldb.util.Slices;
 import org.iq80.leveldb.util.VariableLengthQuantity;
 
-import java.util.Comparator;
-import java.util.NoSuchElementException;
-
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkPositionIndex;
 import static com.google.common.base.Preconditions.checkState;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_INT;
 
-public class BlockIterator
-  implements SeekingIterator<Slice, Slice> {
+public class BlockIterator implements SeekingIterator<Slice, Slice> {
   private final SliceInput data;
   private final Slice restartPositions;
   private final int restartCount;
@@ -45,7 +43,11 @@ public class BlockIterator
   public BlockIterator(Slice data, Slice restartPositions, Comparator<Slice> comparator) {
     requireNonNull(data, "data is null");
     requireNonNull(restartPositions, "restartPositions is null");
-    checkArgument(restartPositions.length() % SIZE_OF_INT == 0, "restartPositions.readableBytes() must be a multiple of %s", SIZE_OF_INT);
+    checkArgument(
+        restartPositions.length() % SIZE_OF_INT == 0,
+        "restartPositions.readableBytes() must be a multiple of %s",
+        SIZE_OF_INT
+    );
     requireNonNull(comparator, "comparator is null");
 
     this.data = data.input();
@@ -56,6 +58,39 @@ public class BlockIterator
     this.comparator = comparator;
 
     seekToFirst();
+  }
+
+  /**
+   * Reads the entry at the current data readIndex.
+   * After this method, data readIndex is positioned at the beginning of the next entry
+   * or at the end of data if there was not a next entry.
+   *
+   * @return true if an entry was read
+   */
+  private static BlockEntry readEntry(SliceInput data, BlockEntry previousEntry) {
+    requireNonNull(data, "data is null");
+
+    // read entry header
+    int sharedKeyLength = VariableLengthQuantity.readVariableLengthInt(data);
+    int nonSharedKeyLength = VariableLengthQuantity.readVariableLengthInt(data);
+    int valueLength = VariableLengthQuantity.readVariableLengthInt(data);
+
+    // read key
+    Slice key = Slices.allocate(sharedKeyLength + nonSharedKeyLength);
+    SliceOutput sliceOutput = key.output();
+    if (sharedKeyLength > 0) {
+      checkState(
+          previousEntry != null,
+          "Entry has a shared key but no previous entry was provided"
+      );
+      sliceOutput.writeBytes(previousEntry.getKey(), 0, sharedKeyLength);
+    }
+    sliceOutput.writeBytes(data, nonSharedKeyLength);
+
+    // read value
+    Slice value = data.readSlice(valueLength);
+
+    return new BlockEntry(key, value);
   }
 
   @Override
@@ -139,7 +174,6 @@ public class BlockIterator
         break;
       }
     }
-
   }
 
   /**
@@ -159,35 +193,5 @@ public class BlockIterator
 
     // read the entry
     nextEntry = readEntry(data, null);
-  }
-
-  /**
-   * Reads the entry at the current data readIndex.
-   * After this method, data readIndex is positioned at the beginning of the next entry
-   * or at the end of data if there was not a next entry.
-   *
-   * @return true if an entry was read
-   */
-  private static BlockEntry readEntry(SliceInput data, BlockEntry previousEntry) {
-    requireNonNull(data, "data is null");
-
-    // read entry header
-    int sharedKeyLength = VariableLengthQuantity.readVariableLengthInt(data);
-    int nonSharedKeyLength = VariableLengthQuantity.readVariableLengthInt(data);
-    int valueLength = VariableLengthQuantity.readVariableLengthInt(data);
-
-    // read key
-    Slice key = Slices.allocate(sharedKeyLength + nonSharedKeyLength);
-    SliceOutput sliceOutput = key.output();
-    if (sharedKeyLength > 0) {
-      checkState(previousEntry != null, "Entry has a shared key but no previous entry was provided");
-      sliceOutput.writeBytes(previousEntry.getKey(), 0, sharedKeyLength);
-    }
-    sliceOutput.writeBytes(data, nonSharedKeyLength);
-
-    // read value
-    Slice value = data.readSlice(valueLength);
-
-    return new BlockEntry(key, value);
   }
 }

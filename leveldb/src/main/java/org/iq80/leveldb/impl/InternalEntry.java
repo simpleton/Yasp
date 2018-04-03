@@ -17,15 +17,13 @@
  */
 package org.iq80.leveldb.impl;
 
+import java.util.Map.Entry;
 import org.iq80.leveldb.util.Slice;
 
-import java.util.Map.Entry;
+import static com.simsun.common.base.StandardCharsets.UTF_8;
+import static com.simsun.common.base.Utils.requireNonNull;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Objects.requireNonNull;
-
-public class InternalEntry
-  implements Entry<InternalKey, Slice> {
+public class InternalEntry implements Entry<InternalKey, Slice> {
   private final InternalKey key;
   private final Slice value;
 

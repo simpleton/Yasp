@@ -23,7 +23,7 @@ import org.iq80.leveldb.util.SliceInput;
 import org.iq80.leveldb.util.SliceOutput;
 import org.iq80.leveldb.util.Slices;
 
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 
 public class BlockTrailer {
   public static final int ENCODED_LENGTH = 5;
@@ -36,6 +36,25 @@ public class BlockTrailer {
 
     this.compressionType = compressionType;
     this.crc32c = crc32c;
+  }
+
+  public static BlockTrailer readBlockTrailer(Slice slice) {
+    SliceInput sliceInput = slice.input();
+    CompressionType compressionType =
+        CompressionType.getCompressionTypeByPersistentId(sliceInput.readUnsignedByte());
+    int crc32c = sliceInput.readInt();
+    return new BlockTrailer(compressionType, crc32c);
+  }
+
+  public static Slice writeBlockTrailer(BlockTrailer blockTrailer) {
+    Slice slice = Slices.allocate(ENCODED_LENGTH);
+    writeBlockTrailer(blockTrailer, slice.output());
+    return slice;
+  }
+
+  public static void writeBlockTrailer(BlockTrailer blockTrailer, SliceOutput sliceOutput) {
+    sliceOutput.writeByte(blockTrailer.getCompressionType().persistentId());
+    sliceOutput.writeInt(blockTrailer.getCrc32c());
   }
 
   public CompressionType getCompressionType() {
@@ -82,23 +101,5 @@ public class BlockTrailer {
     sb.append(", crc32c=0x").append(Integer.toHexString(crc32c));
     sb.append('}');
     return sb.toString();
-  }
-
-  public static BlockTrailer readBlockTrailer(Slice slice) {
-    SliceInput sliceInput = slice.input();
-    CompressionType compressionType = CompressionType.getCompressionTypeByPersistentId(sliceInput.readUnsignedByte());
-    int crc32c = sliceInput.readInt();
-    return new BlockTrailer(compressionType, crc32c);
-  }
-
-  public static Slice writeBlockTrailer(BlockTrailer blockTrailer) {
-    Slice slice = Slices.allocate(ENCODED_LENGTH);
-    writeBlockTrailer(blockTrailer, slice.output());
-    return slice;
-  }
-
-  public static void writeBlockTrailer(BlockTrailer blockTrailer, SliceOutput sliceOutput) {
-    sliceOutput.writeByte(blockTrailer.getCompressionType().persistentId());
-    sliceOutput.writeInt(blockTrailer.getCrc32c());
   }
 }

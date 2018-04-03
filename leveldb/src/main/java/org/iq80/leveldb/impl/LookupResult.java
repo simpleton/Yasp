@@ -19,17 +19,9 @@ package org.iq80.leveldb.impl;
 
 import org.iq80.leveldb.util.Slice;
 
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 
 public class LookupResult {
-  public static LookupResult ok(LookupKey key, Slice value) {
-    return new LookupResult(key, value, false);
-  }
-
-  public static LookupResult deleted(LookupKey key) {
-    return new LookupResult(key, null, true);
-  }
-
   private final LookupKey key;
   private final Slice value;
   private final boolean deleted;
@@ -43,6 +35,14 @@ public class LookupResult {
       this.value = null;
     }
     this.deleted = deleted;
+  }
+
+  public static LookupResult ok(LookupKey key, Slice value) {
+    return new LookupResult(key, value, false);
+  }
+
+  public static LookupResult deleted(LookupKey key) {
+    return new LookupResult(key, null, true);
   }
 
   public LookupKey getKey() {

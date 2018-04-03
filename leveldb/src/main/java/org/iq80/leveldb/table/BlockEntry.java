@@ -17,12 +17,11 @@
  */
 package org.iq80.leveldb.table;
 
+import java.util.Map.Entry;
 import org.iq80.leveldb.util.Slice;
 
-import java.util.Map.Entry;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.StandardCharsets.UTF_8;
+import static com.simsun.common.base.Utils.requireNonNull;
 
 /**
  * Binary Structure
@@ -70,8 +69,7 @@ import static java.util.Objects.requireNonNull;
  * </tbody>
  * </table>
  */
-public class BlockEntry
-  implements Entry<Slice, Slice> {
+public class BlockEntry implements Entry<Slice, Slice> {
   private final Slice key;
   private final Slice value;
 

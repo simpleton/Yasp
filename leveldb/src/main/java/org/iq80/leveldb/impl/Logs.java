@@ -17,18 +17,16 @@
  */
 package org.iq80.leveldb.impl;
 
-import org.iq80.leveldb.util.PureJavaCrc32C;
-import org.iq80.leveldb.util.Slice;
-
 import java.io.File;
 import java.io.IOException;
+import org.iq80.leveldb.util.PureJavaCrc32C;
+import org.iq80.leveldb.util.Slice;
 
 public final class Logs {
   private Logs() {
   }
 
-  public static LogWriter createLogWriter(File file, long fileNumber)
-    throws IOException {
+  public static LogWriter createLogWriter(File file, long fileNumber) throws IOException {
     if (Iq80DBFactory.USE_MMAP) {
       return new MMapLogWriter(file, fileNumber);
     } else {

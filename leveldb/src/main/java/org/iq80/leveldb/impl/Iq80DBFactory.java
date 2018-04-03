@@ -18,18 +18,15 @@
 package org.iq80.leveldb.impl;
 
 import com.simsun.common.base.StandardCharsets;
-
-import org.iq80.leveldb.DB;
-import org.iq80.leveldb.DBFactory;
-import org.iq80.leveldb.Options;
-import org.iq80.leveldb.util.FileUtils;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
+import org.iq80.leveldb.DB;
+import org.iq80.leveldb.DBFactory;
+import org.iq80.leveldb.Options;
+import org.iq80.leveldb.util.FileUtils;
 
 /**
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
@@ -40,9 +37,8 @@ public class Iq80DBFactory implements DBFactory {
   // We only use MMAP on 64 bit systems since it's really easy to run out of
   // virtual address space on a 32 bit system when all the data is getting mapped
   // into memory.  If you really want to use MMAP anyways, use -Dleveldb.mmap=true
-  public static final boolean USE_MMAP = Boolean.parseBoolean(
-    System.getProperty("leveldb.mmap", "" + (CPU_DATA_MODEL > 32))
-  );
+  public static final boolean USE_MMAP =
+      Boolean.parseBoolean(System.getProperty("leveldb.mmap", "" + (CPU_DATA_MODEL > 32)));
   public static final String VERSION;
   public static final Iq80DBFactory factory = new Iq80DBFactory();
 

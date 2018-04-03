@@ -34,6 +34,29 @@ public class BlockHandle {
     this.dataSize = dataSize;
   }
 
+  public static BlockHandle readBlockHandle(SliceInput sliceInput) {
+    long offset = VariableLengthQuantity.readVariableLengthLong(sliceInput);
+    long size = VariableLengthQuantity.readVariableLengthLong(sliceInput);
+
+    if (size > Integer.MAX_VALUE) {
+      throw new IllegalArgumentException("Blocks can not be larger than Integer.MAX_VALUE");
+    }
+
+    return new BlockHandle(offset, (int) size);
+  }
+
+  public static Slice writeBlockHandle(BlockHandle blockHandle) {
+    Slice slice = Slices.allocate(MAX_ENCODED_LENGTH);
+    SliceOutput sliceOutput = slice.output();
+    writeBlockHandleTo(blockHandle, sliceOutput);
+    return slice.slice();
+  }
+
+  public static void writeBlockHandleTo(BlockHandle blockHandle, SliceOutput sliceOutput) {
+    VariableLengthQuantity.writeVariableLengthLong(blockHandle.offset, sliceOutput);
+    VariableLengthQuantity.writeVariableLengthLong(blockHandle.dataSize, sliceOutput);
+  }
+
   public long getOffset() {
     return offset;
   }
@@ -82,28 +105,5 @@ public class BlockHandle {
     sb.append(", dataSize=").append(dataSize);
     sb.append('}');
     return sb.toString();
-  }
-
-  public static BlockHandle readBlockHandle(SliceInput sliceInput) {
-    long offset = VariableLengthQuantity.readVariableLengthLong(sliceInput);
-    long size = VariableLengthQuantity.readVariableLengthLong(sliceInput);
-
-    if (size > Integer.MAX_VALUE) {
-      throw new IllegalArgumentException("Blocks can not be larger than Integer.MAX_VALUE");
-    }
-
-    return new BlockHandle(offset, (int) size);
-  }
-
-  public static Slice writeBlockHandle(BlockHandle blockHandle) {
-    Slice slice = Slices.allocate(MAX_ENCODED_LENGTH);
-    SliceOutput sliceOutput = slice.output();
-    writeBlockHandleTo(blockHandle, sliceOutput);
-    return slice.slice();
-  }
-
-  public static void writeBlockHandleTo(BlockHandle blockHandle, SliceOutput sliceOutput) {
-    VariableLengthQuantity.writeVariableLengthLong(blockHandle.offset, sliceOutput);
-    VariableLengthQuantity.writeVariableLengthLong(blockHandle.dataSize, sliceOutput);
   }
 }

@@ -17,12 +17,10 @@
  */
 package org.iq80.leveldb.impl;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.iq80.leveldb.Snapshot;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
-public class SnapshotImpl
-  implements Snapshot {
+public class SnapshotImpl implements Snapshot {
   private final AtomicBoolean closed = new AtomicBoolean();
   private final Version version;
   private final long lastSequence;

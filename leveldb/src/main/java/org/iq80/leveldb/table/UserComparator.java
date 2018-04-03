@@ -17,13 +17,11 @@
  */
 package org.iq80.leveldb.table;
 
+import java.util.Comparator;
 import org.iq80.leveldb.util.Slice;
 
-import java.util.Comparator;
-
 // todo this interface needs more thought
-public interface UserComparator
-  extends Comparator<Slice> {
+public interface UserComparator extends Comparator<Slice> {
   String name();
 
   Slice findShortestSeparator(Slice start, Slice limit);

@@ -17,14 +17,12 @@
  */
 package org.iq80.leveldb.util;
 
+import java.util.Map.Entry;
 import org.iq80.leveldb.table.Block;
 import org.iq80.leveldb.table.BlockIterator;
 import org.iq80.leveldb.table.Table;
 
-import java.util.Map.Entry;
-
-public final class TableIterator
-  extends AbstractSeekingIterator<Slice, Slice> {
+public final class TableIterator extends AbstractSeekingIterator<Slice, Slice> {
   private final Table table;
   private final BlockIterator blockIterator;
   private BlockIterator current;

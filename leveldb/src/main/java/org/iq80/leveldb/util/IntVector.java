@@ -55,7 +55,6 @@ public class IntVector {
       newLength = 1;
     } else {
       newLength <<= 1;
-
     }
     values = Arrays.copyOf(values, newLength);
   }

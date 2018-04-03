@@ -26,9 +26,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.charset.Charset;
 
-public abstract class SliceOutput
-  extends OutputStream
-  implements DataOutput {
+public abstract class SliceOutput extends OutputStream implements DataOutput {
   /**
    * Resets this stream to the initial position.
    */
@@ -112,7 +110,7 @@ public abstract class SliceOutput
    * does not.
    *
    * @throws IndexOutOfBoundsException if {@code source.readableBytes} is greater than
-   *                                   {@code this.writableBytes}
+   *     {@code this.writableBytes}
    */
   public abstract void writeBytes(Slice source);
 
@@ -127,7 +125,7 @@ public abstract class SliceOutput
    *
    * @param length the number of bytes to transfer
    * @throws IndexOutOfBoundsException if {@code length} is greater than {@code this.writableBytes} or
-   *                                   if {@code length} is greater then {@code source.readableBytes}
+   *     if {@code length} is greater then {@code source.readableBytes}
    */
   public abstract void writeBytes(SliceInput source, int length);
 
@@ -137,17 +135,16 @@ public abstract class SliceOutput
    * by the number of the transferred bytes (= {@code length}).
    *
    * @param sourceIndex the first index of the source
-   * @param length      the number of bytes to transfer
+   * @param length the number of bytes to transfer
    * @throws IndexOutOfBoundsException if the specified {@code sourceIndex} is less than {@code 0},
-   *                                   if {@code sourceIndex + length} is greater than
-   *                                   {@code source.capacity}, or
-   *                                   if {@code length} is greater than {@code this.writableBytes}
+   *     if {@code sourceIndex + length} is greater than
+   *     {@code source.capacity}, or
+   *     if {@code length} is greater than {@code this.writableBytes}
    */
   public abstract void writeBytes(Slice source, int sourceIndex, int length);
 
   @Override
-  public final void write(byte[] source)
-    throws IOException {
+  public final void write(byte[] source) throws IOException {
     writeBytes(source);
   }
 
@@ -171,11 +168,11 @@ public abstract class SliceOutput
    * by the number of the transferred bytes (= {@code length}).
    *
    * @param sourceIndex the first index of the source
-   * @param length      the number of bytes to transfer
+   * @param length the number of bytes to transfer
    * @throws IndexOutOfBoundsException if the specified {@code sourceIndex} is less than {@code 0},
-   *                                   if {@code sourceIndex + length} is greater than
-   *                                   {@code source.length}, or
-   *                                   if {@code length} is greater than {@code this.writableBytes}
+   *     if {@code sourceIndex + length} is greater than
+   *     {@code source.length}, or
+   *     if {@code length} is greater than {@code this.writableBytes}
    */
   public abstract void writeBytes(byte[] source, int sourceIndex, int length);
 
@@ -186,7 +183,7 @@ public abstract class SliceOutput
    * number of the transferred bytes.
    *
    * @throws IndexOutOfBoundsException if {@code source.remaining()} is greater than
-   *                                   {@code this.writableBytes}
+   *     {@code this.writableBytes}
    */
   public abstract void writeBytes(ByteBuffer source);
 
@@ -198,10 +195,9 @@ public abstract class SliceOutput
    * @param length the number of bytes to transfer
    * @return the actual number of bytes read in from the specified stream
    * @throws IndexOutOfBoundsException if {@code length} is greater than {@code this.writableBytes}
-   * @throws java.io.IOException       if the specified stream threw an exception during I/O
+   * @throws java.io.IOException if the specified stream threw an exception during I/O
    */
-  public abstract int writeBytes(InputStream in, int length)
-    throws IOException;
+  public abstract int writeBytes(InputStream in, int length) throws IOException;
 
   /**
    * Transfers the content of the specified channel to this buffer
@@ -211,13 +207,11 @@ public abstract class SliceOutput
    * @param length the maximum number of bytes to transfer
    * @return the actual number of bytes read in from the specified channel
    * @throws IndexOutOfBoundsException if {@code length} is greater than {@code this.writableBytes}
-   * @throws java.io.IOException       if the specified channel threw an exception during I/O
+   * @throws java.io.IOException if the specified channel threw an exception during I/O
    */
-  public abstract int writeBytes(ScatteringByteChannel in, int length)
-    throws IOException;
+  public abstract int writeBytes(ScatteringByteChannel in, int length) throws IOException;
 
-  public abstract int writeBytes(FileChannel in, int position, int length)
-    throws IOException;
+  public abstract int writeBytes(FileChannel in, int position, int length) throws IOException;
 
   /**
    * Fills this buffer with <tt>NUL (0x00)</tt> starting at the current
@@ -257,7 +251,7 @@ public abstract class SliceOutput
    * this buffer.
    *
    * @throws java.nio.charset.UnsupportedCharsetException if the specified character set name is not supported by the
-   *                                                      current VM
+   *     current VM
    */
   public abstract String toString(Charset charset);
 

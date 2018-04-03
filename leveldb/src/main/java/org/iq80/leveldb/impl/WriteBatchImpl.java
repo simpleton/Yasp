@@ -18,19 +18,16 @@
 package org.iq80.leveldb.impl;
 
 import com.google.common.collect.Maps;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
 import org.iq80.leveldb.WriteBatch;
 import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.Slices;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
+import static com.simsun.common.base.Utils.requireNonNull;
 
-import static java.util.Objects.requireNonNull;
-
-public class WriteBatchImpl
-  implements WriteBatch {
+public class WriteBatchImpl implements WriteBatch {
   private final List<Entry<Slice, Slice>> batch = new ArrayList<>();
   private int approximateSize;
 

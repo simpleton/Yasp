@@ -47,7 +47,7 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 
 import static com.google.common.collect.Maps.immutableEntry;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.simsun.common.base.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.iq80.leveldb.CompressionType.NONE;
 import static org.iq80.leveldb.impl.DbConstants.NUM_LEVELS;

@@ -22,7 +22,11 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
-
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.util.concurrent.ExecutionException;
 import org.iq80.leveldb.table.FileChannelTable;
 import org.iq80.leveldb.table.MMapTable;
 import org.iq80.leveldb.table.Table;
@@ -31,37 +35,34 @@ import org.iq80.leveldb.util.Finalizer;
 import org.iq80.leveldb.util.InternalTableIterator;
 import org.iq80.leveldb.util.Slice;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.util.concurrent.ExecutionException;
-
-import static java.util.Objects.requireNonNull;
+import static com.simsun.common.base.Utils.requireNonNull;
 
 public class TableCache {
   private final LoadingCache<Long, TableAndFile> cache;
   private final Finalizer<Table> finalizer = new Finalizer<>(1);
 
-  public TableCache(final File databaseDir, int tableCacheSize, final UserComparator userComparator, final boolean verifyChecksums) {
+  public TableCache(
+      final File databaseDir,
+      int tableCacheSize,
+      final UserComparator userComparator,
+      final boolean verifyChecksums) {
     requireNonNull(databaseDir, "databaseName is null");
 
     cache = CacheBuilder.newBuilder()
-      .maximumSize(tableCacheSize)
-      .removalListener(new RemovalListener<Long, TableAndFile>() {
-        @Override
-        public void onRemoval(RemovalNotification<Long, TableAndFile> notification) {
-          Table table = notification.getValue().getTable();
-          finalizer.addCleanup(table, table.closer());
-        }
-      })
-      .build(new CacheLoader<Long, TableAndFile>() {
-        @Override
-        public TableAndFile load(Long fileNumber)
-          throws IOException {
-          return new TableAndFile(databaseDir, fileNumber, userComparator, verifyChecksums);
-        }
-      });
+        .maximumSize(tableCacheSize)
+        .removalListener(new RemovalListener<Long, TableAndFile>() {
+          @Override
+          public void onRemoval(RemovalNotification<Long, TableAndFile> notification) {
+            Table table = notification.getValue().getTable();
+            finalizer.addCleanup(table, table.closer());
+          }
+        })
+        .build(new CacheLoader<Long, TableAndFile>() {
+          @Override
+          public TableAndFile load(Long fileNumber) throws IOException {
+            return new TableAndFile(databaseDir, fileNumber, userComparator, verifyChecksums);
+          }
+        });
   }
 
   public InternalTableIterator newIterator(FileMetaData file) {
@@ -102,16 +103,25 @@ public class TableCache {
   private static final class TableAndFile {
     private final Table table;
 
-    private TableAndFile(File databaseDir, long fileNumber, UserComparator userComparator, boolean verifyChecksums)
-      throws IOException {
+    private TableAndFile(
+        File databaseDir, long fileNumber, UserComparator userComparator, boolean verifyChecksums)
+        throws IOException {
       String tableFileName = Filename.tableFileName(fileNumber);
       File tableFile = new File(databaseDir, tableFileName);
       try (FileInputStream fis = new FileInputStream(tableFile);
            FileChannel fileChannel = fis.getChannel()) {
         if (Iq80DBFactory.USE_MMAP) {
-          table = new MMapTable(tableFile.getAbsolutePath(), fileChannel, userComparator, verifyChecksums);
+          table = new MMapTable(tableFile.getAbsolutePath(),
+              fileChannel,
+              userComparator,
+              verifyChecksums
+          );
         } else {
-          table = new FileChannelTable(tableFile.getAbsolutePath(), fileChannel, userComparator, verifyChecksums);
+          table = new FileChannelTable(tableFile.getAbsolutePath(),
+              fileChannel,
+              userComparator,
+              verifyChecksums
+          );
         }
       }
     }
