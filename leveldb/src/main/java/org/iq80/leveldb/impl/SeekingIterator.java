@@ -17,7 +17,7 @@
  */
 package org.iq80.leveldb.impl;
 
-import com.google.common.collect.PeekingIterator;
+import com.simsun.common.base.PeekingIterator;
 import java.util.Map.Entry;
 
 public interface SeekingIterator<K, V> extends PeekingIterator<Entry<K, V>> {

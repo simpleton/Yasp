@@ -112,48 +112,6 @@ public final class Snappy {
     int maxCompressedLength(int length);
   }
 
-  public static class XerialSnappy implements SPI {
-    static {
-      // Make sure that the JNI libs are fully loaded.
-      try {
-        org.xerial.snappy.Snappy.compress("test");
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    @Override
-    public int uncompress(ByteBuffer compressed, ByteBuffer uncompressed) throws IOException {
-      return org.xerial.snappy.Snappy.uncompress(compressed, uncompressed);
-    }
-
-    @Override
-    public int uncompress(
-        byte[] input,
-        int inputOffset,
-        int length,
-        byte[] output,
-        int outputOffset) throws IOException {
-      return org.xerial.snappy.Snappy.uncompress(input, inputOffset, length, output, outputOffset);
-    }
-
-    @Override
-    public int compress(byte[] input, int inputOffset, int length, byte[] output, int outputOffset)
-        throws IOException {
-      return org.xerial.snappy.Snappy.compress(input, inputOffset, length, output, outputOffset);
-    }
-
-    @Override
-    public byte[] compress(String text) throws IOException {
-      return org.xerial.snappy.Snappy.compress(text);
-    }
-
-    @Override
-    public int maxCompressedLength(int length) {
-      return org.xerial.snappy.Snappy.maxCompressedLength(length);
-    }
-  }
-
   public static class IQ80Snappy implements SPI {
     static {
       // Make sure that the library can fully load.
@@ -187,13 +145,16 @@ public final class Snappy {
         output = uncompressed.array();
         outputOffset = uncompressed.arrayOffset() + uncompressed.position();
       } else {
-        int t = org.iq80.snappy.Snappy.getUncompressedLength(input, inputOffset);
+        int t = 0;
+        //FIXME:
+        //org.iq80.snappy.Snappy.getUncompressedLength(input, inputOffset);
         output = new byte[t];
         outputOffset = 0;
       }
 
-      int count =
-          org.iq80.snappy.Snappy.uncompress(input, inputOffset, length, output, outputOffset);
+      int count = 0;
+      //FIXME:
+      //org.iq80.snappy.Snappy.uncompress(input, inputOffset, length, output, outputOffset);
       if (uncompressed.hasArray()) {
         uncompressed.limit(uncompressed.position() + count);
       } else {
@@ -212,13 +173,17 @@ public final class Snappy {
         int length,
         byte[] output,
         int outputOffset) throws IOException {
-      return org.iq80.snappy.Snappy.uncompress(input, inputOffset, length, output, outputOffset);
+      return 0;
+      //FIXME:
+      //return org.iq80.snappy.Snappy.uncompress(input, inputOffset, length, output, outputOffset);
     }
 
     @Override
     public int compress(byte[] input, int inputOffset, int length, byte[] output, int outputOffset)
         throws IOException {
-      return org.iq80.snappy.Snappy.compress(input, inputOffset, length, output, outputOffset);
+      return 0;
+      //FIXME:
+      //return org.iq80.snappy.Snappy.compress(input, inputOffset, length, output, outputOffset);
     }
 
     @Override
@@ -233,7 +198,9 @@ public final class Snappy {
 
     @Override
     public int maxCompressedLength(int length) {
-      return org.iq80.snappy.Snappy.maxCompressedLength(length);
+      return 0;
+      //FIXME:
+      //return org.iq80.snappy.Snappy.maxCompressedLength(length);
     }
   }
 }

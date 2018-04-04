@@ -17,16 +17,15 @@
  */
 package org.iq80.leveldb.table;
 
-import com.google.common.primitives.Ints;
 import java.util.Comparator;
 import org.iq80.leveldb.util.DynamicSliceOutput;
 import org.iq80.leveldb.util.IntVector;
 import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.VariableLengthQuantity;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkPositionIndex;
-import static com.google.common.base.Preconditions.checkState;
+import static com.simsun.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkPositionIndex;
+import static com.simsun.common.base.Preconditions.checkState;
 import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_INT;
 
@@ -57,7 +56,7 @@ public class BlockBuilder {
     int sharedKeyBytes = 0;
 
     if (leftKey != null && rightKey != null) {
-      int minSharedKeyBytes = Ints.min(leftKey.length(), rightKey.length());
+      int minSharedKeyBytes = Math.min(leftKey.length(), rightKey.length());
       while (sharedKeyBytes < minSharedKeyBytes
              && leftKey.getByte(sharedKeyBytes) == rightKey.getByte(sharedKeyBytes)) {
         sharedKeyBytes++;

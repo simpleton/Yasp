@@ -17,7 +17,7 @@
  */
 package org.iq80.leveldb.util;
 
-import com.google.common.base.Throwables;
+import android.util.Log;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 
 public final class ByteBufferSupport {
+  public static final String TAG = "ByteBufferSupport";
   private static final MethodHandle INVOKE_CLEANER;
 
   static {
@@ -73,7 +74,7 @@ public final class ByteBufferSupport {
     try {
       INVOKE_CLEANER.invoke(buffer);
     } catch (Throwable ignored) {
-      throw Throwables.propagate(ignored);
+      Log.e(TAG, "", ignored);
     }
   }
 }

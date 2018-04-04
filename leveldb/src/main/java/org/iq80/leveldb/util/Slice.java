@@ -28,8 +28,8 @@ import java.nio.channels.ScatteringByteChannel;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
-import static com.google.common.base.Preconditions.checkPositionIndex;
-import static com.google.common.base.Preconditions.checkPositionIndexes;
+import static com.simsun.common.base.Preconditions.checkPositionIndex;
+import static com.simsun.common.base.Preconditions.checkPositionIndexes;
 import static com.simsun.common.base.Utils.requireNonNull;
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_BYTE;

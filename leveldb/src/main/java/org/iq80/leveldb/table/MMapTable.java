@@ -32,7 +32,7 @@ import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.Slices;
 import org.iq80.leveldb.util.Snappy;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkArgument;
 import static org.iq80.leveldb.CompressionType.SNAPPY;
 
 public class MMapTable extends Table {

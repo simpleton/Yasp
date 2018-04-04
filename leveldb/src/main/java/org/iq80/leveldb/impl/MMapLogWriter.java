@@ -31,8 +31,8 @@ import org.iq80.leveldb.util.SliceInput;
 import org.iq80.leveldb.util.SliceOutput;
 import org.iq80.leveldb.util.Slices;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+import static com.simsun.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkState;
 import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.impl.LogConstants.BLOCK_SIZE;
 import static org.iq80.leveldb.impl.LogConstants.HEADER_SIZE;

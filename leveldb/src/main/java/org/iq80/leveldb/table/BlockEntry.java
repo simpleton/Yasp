@@ -109,14 +109,7 @@ public class BlockEntry implements Entry<Slice, Slice> {
 
     BlockEntry entry = (BlockEntry) o;
 
-    if (!key.equals(entry.key)) {
-      return false;
-    }
-    if (!value.equals(entry.value)) {
-      return false;
-    }
-
-    return true;
+    return key.equals(entry.key) && value.equals(entry.value);
   }
 
   @Override

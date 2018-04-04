@@ -17,6 +17,7 @@
  */
 package org.iq80.leveldb.util;
 
+import com.simsun.common.base.Utils;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -95,7 +96,7 @@ public final class MergingIterator extends AbstractSeekingIterator<InternalKey, 
     private final int ordinal;
     private Entry<InternalKey, Slice> nextElement;
 
-    private ComparableIterator(
+    ComparableIterator(
         InternalIterator iterator,
         Comparator<InternalKey> comparator,
         int ordinal,
@@ -164,7 +165,7 @@ public final class MergingIterator extends AbstractSeekingIterator<InternalKey, 
     public int compareTo(ComparableIterator that) {
       int result = comparator.compare(this.nextElement.getKey(), that.nextElement.getKey());
       if (result == 0) {
-        result = Integer.compare(this.ordinal, that.ordinal);
+        result = Utils.compare(this.ordinal, that.ordinal);
       }
       return result;
     }

@@ -17,9 +17,7 @@
  */
 package org.iq80.leveldb.util;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.Iterables;
+import com.simsun.common.base.Utils;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -184,7 +182,7 @@ public final class Level0Iterator extends AbstractSeekingIterator<InternalKey, S
     public int compareTo(ComparableIterator that) {
       int result = comparator.compare(this.nextElement.getKey(), that.nextElement.getKey());
       if (result == 0) {
-        result = Integer.compare(this.ordinal, that.ordinal);
+        result = Utils.compare(this.ordinal, that.ordinal);
       }
       return result;
     }

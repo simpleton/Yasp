@@ -17,7 +17,7 @@
  */
 package org.iq80.leveldb.table;
 
-import com.google.common.base.Throwables;
+import android.util.Log;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -28,11 +28,12 @@ import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.Slices;
 import org.iq80.leveldb.util.Snappy;
 
-import static com.google.common.base.Preconditions.checkState;
+import static com.simsun.common.base.Preconditions.checkState;
 import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.impl.VersionSet.TARGET_FILE_SIZE;
 
 public class TableBuilder {
+  public static final String TAG = "TableBuilder";
   /**
    * TABLE_MAGIC_NUMBER was picked by running
    * echo http://code.google.com/p/leveldb/ | sha1sum
@@ -79,7 +80,8 @@ public class TableBuilder {
           fileChannel.position()
       );
     } catch (IOException e) {
-      throw Throwables.propagate(e);
+      Log.e(TAG, "", e);
+      //throw Throwables.propagate(e);
     }
 
     this.fileChannel = fileChannel;

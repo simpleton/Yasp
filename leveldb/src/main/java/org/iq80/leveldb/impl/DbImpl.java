@@ -17,6 +17,8 @@
  */
 package org.iq80.leveldb.impl;
 
+import android.util.Log;
+import com.simsun.common.base.ThreadFactoryBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -55,6 +57,7 @@ import org.iq80.leveldb.table.BytewiseComparator;
 import org.iq80.leveldb.table.CustomUserComparator;
 import org.iq80.leveldb.table.TableBuilder;
 import org.iq80.leveldb.table.UserComparator;
+import org.iq80.leveldb.util.Closeables;
 import org.iq80.leveldb.util.DbIterator;
 import org.iq80.leveldb.util.MergingIterator;
 import org.iq80.leveldb.util.Slice;
@@ -80,6 +83,9 @@ import static org.iq80.leveldb.util.Slices.writeLengthPrefixedBytes;
 // todo make thread safe and concurrent
 @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
 public class DbImpl implements DB {
+
+  public static final String TAG = "DbImpl";
+
   private final Options options;
   private final File databaseDir;
   private final TableCache tableCache;
@@ -92,15 +98,19 @@ public class DbImpl implements DB {
 
   private final List<Long> pendingOutputs = new ArrayList<>(); // todo
   private final InternalKeyComparator internalKeyComparator;
-  private final ExecutorService compactionExecutor;
-  private final Object suspensionMutex = new Object();
+
+
   private LogWriter log;
   private MemTable memTable;
   private MemTable immutableMemTable;
-  private volatile Throwable backgroundException;
   private Future<?> backgroundCompaction;
   private ManualCompaction manualCompaction;
-  private int suspensionCounter;
+
+  final ExecutorService compactionExecutor;
+  int suspensionCounter;
+  final Object suspensionMutex = new Object();
+  volatile Throwable backgroundException;
+
 
   public DbImpl(Options options, File databaseDir) throws IOException {
     requireNonNull(options, "options is null");
@@ -201,10 +211,10 @@ public class DbImpl implements DB {
       for (File filename : filenames) {
         FileInfo fileInfo = Filename.parseFileName(filename);
 
-        if (fileInfo != null && fileInfo.getFileType() == FileType.LOG && ((fileInfo.getFileNumber()
-                                                                            >= minLogNumber) || (
-                                                                               fileInfo.getFileNumber()
-                                                                               == previousLogNumber))) {
+        if (fileInfo != null
+            && fileInfo.getFileType() == FileType.LOG
+            && ((fileInfo.getFileNumber() >= minLogNumber)
+            || (fileInfo.getFileNumber() == previousLogNumber))) {
           logs.add(fileInfo.getFileNumber());
         }
       }
@@ -404,7 +414,7 @@ public class DbImpl implements DB {
     }
   }
 
-  private void backgroundCall() throws IOException {
+  void backgroundCall() throws IOException {
     mutex.lock();
     try {
       if (backgroundCompaction == null) {
@@ -433,7 +443,7 @@ public class DbImpl implements DB {
     }
   }
 
-  private void backgroundCompaction() throws IOException {
+  void backgroundCompaction() throws IOException {
     checkState(mutex.isHeldByCurrentThread());
 
     compactMemTableInternal();
@@ -487,7 +497,9 @@ public class DbImpl implements DB {
   private long recoverLogFile(long fileNumber, VersionEdit edit) throws IOException {
     checkState(mutex.isHeldByCurrentThread());
     File file = new File(databaseDir, Filename.logFileName(fileNumber));
-    try (FileInputStream fis = new FileInputStream(file); FileChannel channel = fis.getChannel()) {
+    FileInputStream fis = new FileInputStream(file);
+    FileChannel channel = fis.getChannel();
+    try {
       LogMonitor logMonitor = LogMonitors.logMonitor();
       LogReader logReader = new LogReader(channel, logMonitor, true, 0);
 
@@ -534,6 +546,8 @@ public class DbImpl implements DB {
       }
 
       return maxSequence;
+    } finally {
+      Closeables.closeQuietly(channel);
     }
   }
 
@@ -646,7 +660,7 @@ public class DbImpl implements DB {
         try {
           log.addRecord(record, options.sync());
         } catch (IOException e) {
-          throw Throwables.propagate(e);
+          Log.e(TAG, "", e);
         }
 
         // Update memtable
@@ -1251,25 +1265,25 @@ public class DbImpl implements DB {
   }
 
   private static class CompactionState {
-    private final Compaction compaction;
+    final Compaction compaction;
 
-    private final List<FileMetaData> outputs = new ArrayList<>();
+    final List<FileMetaData> outputs = new ArrayList<>();
 
-    private long smallestSnapshot;
+    long smallestSnapshot;
 
     // State kept for output being generated
-    private FileChannel outfile;
-    private TableBuilder builder;
+    FileChannel outfile;
+    TableBuilder builder;
 
     // Current file being generated
-    private long currentFileNumber;
-    private long currentFileSize;
-    private InternalKey currentSmallest;
-    private InternalKey currentLargest;
+    long currentFileNumber;
+    long currentFileSize;
+    InternalKey currentSmallest;
+    InternalKey currentLargest;
 
-    private long totalBytes;
+    long totalBytes;
 
-    private CompactionState(Compaction compaction) {
+    public CompactionState(Compaction compaction) {
       this.compaction = compaction;
     }
 
@@ -1279,11 +1293,11 @@ public class DbImpl implements DB {
   }
 
   private static class ManualCompaction {
-    private final int level;
-    private final Slice begin;
-    private final Slice end;
+    final int level;
+    final Slice begin;
+    final Slice end;
 
-    private ManualCompaction(int level, Slice begin, Slice end) {
+    public ManualCompaction(int level, Slice begin, Slice end) {
       this.level = level;
       this.begin = begin;
       this.end = end;
@@ -1291,8 +1305,8 @@ public class DbImpl implements DB {
   }
 
   private static class InsertIntoHandler implements Handler {
-    private final MemTable memTable;
-    private long sequence;
+    final MemTable memTable;
+    long sequence;
 
     public InsertIntoHandler(MemTable memTable, long sequenceBegin) {
       this.memTable = memTable;

@@ -17,7 +17,7 @@
  */
 package org.iq80.leveldb.util;
 
-import com.google.common.collect.Maps;
+import java.util.AbstractMap;
 import java.util.Map.Entry;
 import org.iq80.leveldb.impl.InternalKey;
 
@@ -43,7 +43,7 @@ public class InternalTableIterator extends AbstractSeekingIterator<InternalKey, 
   protected Entry<InternalKey, Slice> getNextElement() {
     if (tableIterator.hasNext()) {
       Entry<Slice, Slice> next = tableIterator.next();
-      return Maps.immutableEntry(new InternalKey(next.getKey()), next.getValue());
+      return new AbstractMap.SimpleImmutableEntry<>(new InternalKey(next.getKey()), next.getValue());
     }
     return null;
   }

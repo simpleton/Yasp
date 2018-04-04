@@ -22,7 +22,7 @@ import org.iq80.leveldb.impl.SeekingIterable;
 import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.Slices;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkArgument;
 import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_INT;
 

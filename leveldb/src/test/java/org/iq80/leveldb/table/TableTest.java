@@ -34,7 +34,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.checkState;
+import static com.simsun.common.base.Preconditions.checkState;
 import static java.util.Arrays.asList;
 import static org.testng.Assert.assertTrue;
 

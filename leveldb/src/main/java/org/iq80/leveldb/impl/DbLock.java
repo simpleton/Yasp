@@ -17,7 +17,7 @@
  */
 package org.iq80.leveldb.impl;
 
-import com.google.common.base.Throwables;
+import android.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -29,6 +29,8 @@ import static com.simsun.common.base.Utils.requireNonNull;
 import static java.lang.String.format;
 
 public class DbLock {
+  public static final String TAG = "DbLock";
+
   private final File lockFile;
   private final FileChannel channel;
   private final FileLock lock;
@@ -59,7 +61,7 @@ public class DbLock {
     try {
       lock.release();
     } catch (IOException e) {
-      Throwables.propagate(e);
+      Log.d(TAG, "release", e);
     } finally {
       Closeables.closeQuietly(channel);
     }

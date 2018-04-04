@@ -17,7 +17,7 @@
  */
 package org.iq80.leveldb.impl;
 
-import com.google.common.collect.Maps;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -43,7 +43,9 @@ public class WriteBatchImpl implements WriteBatch {
   public WriteBatchImpl put(byte[] key, byte[] value) {
     requireNonNull(key, "key is null");
     requireNonNull(value, "value is null");
-    batch.add(Maps.immutableEntry(Slices.wrappedBuffer(key), Slices.wrappedBuffer(value)));
+    batch.add(new AbstractMap.SimpleImmutableEntry<>(Slices.wrappedBuffer(key),
+        Slices.wrappedBuffer(value)
+    ));
     approximateSize += 12 + key.length + value.length;
     return this;
   }
@@ -51,7 +53,7 @@ public class WriteBatchImpl implements WriteBatch {
   public WriteBatchImpl put(Slice key, Slice value) {
     requireNonNull(key, "key is null");
     requireNonNull(value, "value is null");
-    batch.add(Maps.immutableEntry(key, value));
+    batch.add(new AbstractMap.SimpleImmutableEntry<>(key, value));
     approximateSize += 12 + key.length() + value.length();
     return this;
   }
@@ -59,14 +61,14 @@ public class WriteBatchImpl implements WriteBatch {
   @Override
   public WriteBatchImpl delete(byte[] key) {
     requireNonNull(key, "key is null");
-    batch.add(Maps.immutableEntry(Slices.wrappedBuffer(key), (Slice) null));
+    batch.add(new AbstractMap.SimpleImmutableEntry<>(Slices.wrappedBuffer(key), (Slice) null));
     approximateSize += 6 + key.length;
     return this;
   }
 
   public WriteBatchImpl delete(Slice key) {
     requireNonNull(key, "key is null");
-    batch.add(Maps.immutableEntry(key, (Slice) null));
+    batch.add(new AbstractMap.SimpleImmutableEntry<>(key, (Slice) null));
     approximateSize += 6 + key.length();
     return this;
   }

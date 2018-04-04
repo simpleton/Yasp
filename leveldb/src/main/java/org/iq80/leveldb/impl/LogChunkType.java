@@ -17,7 +17,7 @@
  */
 package org.iq80.leveldb.impl;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkArgument;
 
 public enum LogChunkType {
   ZERO_TYPE(0), FULL(1), FIRST(2), MIDDLE(3), LAST(4), EOF, BAD_CHUNK, UNKNOWN;

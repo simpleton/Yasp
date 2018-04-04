@@ -17,6 +17,7 @@
  */
 package org.iq80.leveldb.impl;
 
+import com.simsun.common.base.Utils;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -43,10 +44,8 @@ public class InternalKeyComparator implements Comparator<InternalKey> {
     if (result != 0) {
       return result;
     }
-
-    return Long.compare(right.getSequenceNumber(),
-        left.getSequenceNumber()
-    ); // reverse sorted version numbers
+    // reverse sorted version numbers
+    return Utils.compare(right.getSequenceNumber(), left.getSequenceNumber());
   }
 
   /**

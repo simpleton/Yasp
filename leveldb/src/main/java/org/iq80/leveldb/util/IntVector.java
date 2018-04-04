@@ -19,7 +19,7 @@ package org.iq80.leveldb.util;
 
 import java.util.Arrays;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkArgument;
 
 public class IntVector {
   private int size;

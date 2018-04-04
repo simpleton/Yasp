@@ -47,8 +47,8 @@ import org.iq80.leveldb.util.Level0Iterator;
 import org.iq80.leveldb.util.MergingIterator;
 import org.iq80.leveldb.util.Slice;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+import static com.simsun.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkState;
 import static com.simsun.common.base.StandardCharsets.UTF_8;
 import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.impl.DbConstants.NUM_LEVELS;

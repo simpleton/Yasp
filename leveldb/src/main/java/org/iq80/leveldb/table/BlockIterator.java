@@ -26,9 +26,9 @@ import org.iq80.leveldb.util.SliceOutput;
 import org.iq80.leveldb.util.Slices;
 import org.iq80.leveldb.util.VariableLengthQuantity;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkPositionIndex;
-import static com.google.common.base.Preconditions.checkState;
+import static com.simsun.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkPositionIndex;
+import static com.simsun.common.base.Preconditions.checkState;
 import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_INT;
 

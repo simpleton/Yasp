@@ -31,7 +31,7 @@ import org.iq80.leveldb.util.LevelIterator;
 import org.iq80.leveldb.util.MergingIterator;
 import org.iq80.leveldb.util.Slice;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkPositionIndex;
 import static com.google.common.collect.Ordering.natural;
 import static com.simsun.common.base.Utils.requireNonNull;

@@ -17,8 +17,7 @@
  */
 package org.iq80.leveldb.impl;
 
-import com.google.common.collect.Iterators;
-import com.google.common.collect.PeekingIterator;
+import com.simsun.common.base.PeekingIterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,7 +28,7 @@ import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_LONG;
 
 public class MemTable implements SeekingIterable<InternalKey, Slice> {
-  private final ConcurrentSkipListMap<InternalKey, Slice> table;
+  final ConcurrentSkipListMap<InternalKey, Slice> table;
   private final AtomicLong approximateMemoryUsage = new AtomicLong();
 
   public MemTable(InternalKeyComparator internalKeyComparator) {

@@ -17,13 +17,19 @@
  */
 package org.iq80.leveldb.util;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.io.Files;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkArgument;
 import static com.simsun.common.base.Utils.requireNonNull;
 
 public final class FileUtils {
@@ -48,20 +54,20 @@ public final class FileUtils {
     }
   }
 
-  public static ImmutableList<File> listFiles(File dir) {
+  public static List<File> listFiles(File dir) {
     File[] files = dir.listFiles();
     if (files == null) {
-      return ImmutableList.of();
+      return Collections.unmodifiableList(new ArrayList<File>());
     }
-    return ImmutableList.copyOf(files);
+    return Collections.unmodifiableList(Arrays.asList(files));
   }
 
-  public static ImmutableList<File> listFiles(File dir, FilenameFilter filter) {
+  public static List<File> listFiles(File dir, FilenameFilter filter) {
     File[] files = dir.listFiles(filter);
     if (files == null) {
-      return ImmutableList.of();
+      return Collections.unmodifiableList(new ArrayList<File>());
     }
-    return ImmutableList.copyOf(files);
+    return Collections.unmodifiableList(Arrays.asList(files));
   }
 
   public static File createTempDir(String prefix) {
@@ -138,7 +144,7 @@ public final class FileUtils {
       return copyDirectoryContents(src, target);
     } else {
       try {
-        Files.copy(src, target);
+        copyFile(src, target);
         return true;
       } catch (IOException e) {
         return false;
@@ -150,14 +156,14 @@ public final class FileUtils {
     requireNonNull(parent, "parent is null");
     requireNonNull(paths, "paths is null");
 
-    return newFile(new File(parent), ImmutableList.copyOf(paths));
+    return newFile(new File(parent), paths);
   }
 
   public static File newFile(File parent, String... paths) {
     requireNonNull(parent, "parent is null");
     requireNonNull(paths, "paths is null");
 
-    return newFile(parent, ImmutableList.copyOf(paths));
+    return newFile(parent, paths);
   }
 
   public static File newFile(File parent, Iterable<String> paths) {
@@ -169,5 +175,20 @@ public final class FileUtils {
       result = new File(result, path);
     }
     return result;
+  }
+
+  private static void copyFile(File src, File target) throws IOException {
+    InputStream in = new FileInputStream(src);
+    OutputStream out = new FileOutputStream(target);
+    try {
+      byte[] buffer = new byte[4096];
+      int read;
+      while ((read = in.read(buffer)) != -1) {
+        out.write(buffer, 0, read);
+      }
+    } finally {
+      Closeables.closeQuietly(in);
+      Closeables.closeQuietly(out);
+    }
   }
 }

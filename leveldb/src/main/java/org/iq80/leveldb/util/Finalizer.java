@@ -17,7 +17,7 @@
  */
 package org.iq80.leveldb.util;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.simsun.common.base.ThreadFactoryBuilder;
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
 import java.util.concurrent.Callable;
@@ -27,8 +27,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+import static com.simsun.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkState;
 import static com.simsun.common.base.Utils.requireNonNull;
 
 public class Finalizer<T> {
@@ -39,13 +39,12 @@ public class Finalizer<T> {
   };
 
   private final int threads;
-  private final FinalizerMonitor monitor;
+  final FinalizerMonitor monitor;
 
-  private final ConcurrentHashMap<FinalizerPhantomReference<T>, Object> references =
-      new ConcurrentHashMap<>();
-  private final ReferenceQueue<T> referenceQueue = new ReferenceQueue<>();
-  private final AtomicBoolean destroyed = new AtomicBoolean();
-  private ExecutorService executor;
+  final ConcurrentHashMap<FinalizerPhantomReference<T>, Object> references = new ConcurrentHashMap<>();
+  final ReferenceQueue<T> referenceQueue = new ReferenceQueue<>();
+  final AtomicBoolean destroyed = new AtomicBoolean();
+  ExecutorService executor;
 
   public Finalizer() {
     this(1, IGNORE_FINALIZER_MONITOR);
@@ -110,15 +109,13 @@ public class Finalizer<T> {
     private final AtomicBoolean cleaned = new AtomicBoolean(false);
     private final Callable<?> cleanup;
 
-    private FinalizerPhantomReference(
-        T referent,
-        ReferenceQueue<? super T> queue,
-        Callable<?> cleanup) {
+    FinalizerPhantomReference(
+        T referent, ReferenceQueue<? super T> queue, Callable<?> cleanup) {
       super(referent, queue);
       this.cleanup = cleanup;
     }
 
-    private void cleanup() throws Exception {
+    void cleanup() throws Exception {
       if (cleaned.compareAndSet(false, true)) {
         cleanup.call();
       }

@@ -21,7 +21,7 @@ import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.SliceOutput;
 import org.iq80.leveldb.util.Slices;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkArgument;
 import static com.simsun.common.base.StandardCharsets.UTF_8;
 import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_LONG;
@@ -96,11 +96,7 @@ public class InternalKey {
     if (userKey != null ? !userKey.equals(that.userKey) : that.userKey != null) {
       return false;
     }
-    if (valueType != that.valueType) {
-      return false;
-    }
-
-    return true;
+    return valueType == that.valueType;
   }
 
   @Override

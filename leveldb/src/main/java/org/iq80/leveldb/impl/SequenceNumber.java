@@ -17,7 +17,7 @@
  */
 package org.iq80.leveldb.impl;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkArgument;
 import static com.simsun.common.base.Utils.requireNonNull;
 
 public final class SequenceNumber {

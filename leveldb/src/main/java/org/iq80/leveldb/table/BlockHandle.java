@@ -80,14 +80,7 @@ public class BlockHandle {
 
     BlockHandle that = (BlockHandle) o;
 
-    if (dataSize != that.dataSize) {
-      return false;
-    }
-    if (offset != that.offset) {
-      return false;
-    }
-
-    return true;
+    return dataSize == that.dataSize && offset == that.offset;
   }
 
   @Override

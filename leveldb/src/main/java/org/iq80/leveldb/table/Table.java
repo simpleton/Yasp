@@ -17,7 +17,7 @@
  */
 package org.iq80.leveldb.table;
 
-import com.google.common.base.Throwables;
+import android.util.Log;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,10 +30,12 @@ import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.TableIterator;
 import org.iq80.leveldb.util.VariableLengthQuantity;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.simsun.common.base.Preconditions.checkArgument;
 import static com.simsun.common.base.Utils.requireNonNull;
 
 public abstract class Table implements SeekingIterable<Slice, Slice> {
+  public static final String TAG = "Table";
+
   protected static ByteBuffer uncompressedScratch = ByteBuffer.allocateDirect(4 * 1024 * 1024);
   protected final String name;
   protected final FileChannel fileChannel;
@@ -76,11 +78,11 @@ public abstract class Table implements SeekingIterable<Slice, Slice> {
 
   public Block openBlock(Slice blockEntry) {
     BlockHandle blockHandle = BlockHandle.readBlockHandle(blockEntry.input());
-    Block dataBlock;
+    Block dataBlock = null;
     try {
       dataBlock = readBlock(blockHandle);
     } catch (IOException e) {
-      throw Throwables.propagate(e);
+      Log.e(TAG, "", e);
     }
     return dataBlock;
   }

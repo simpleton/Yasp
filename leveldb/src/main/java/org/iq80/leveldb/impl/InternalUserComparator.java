@@ -20,7 +20,7 @@ package org.iq80.leveldb.impl;
 import org.iq80.leveldb.table.UserComparator;
 import org.iq80.leveldb.util.Slice;
 
-import static com.google.common.base.Preconditions.checkState;
+import static com.simsun.common.base.Preconditions.checkState;
 import static org.iq80.leveldb.impl.SequenceNumber.MAX_SEQUENCE_NUMBER;
 
 public class InternalUserComparator implements UserComparator {
