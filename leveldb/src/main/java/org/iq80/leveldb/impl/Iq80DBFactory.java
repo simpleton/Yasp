@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBFactory;
 import org.iq80.leveldb.Options;
@@ -36,6 +38,12 @@ import org.iq80.leveldb.util.FileUtils;
 public class Iq80DBFactory implements DBFactory {
 
   public static final String TAG = "Iq80DBFactory";
+  public interface TYPE_BYTES {
+    int INT_BYTES = 32 / Byte.SIZE;
+    int LONG_BYTES = 64 / Byte.SIZE;
+    int FLOAT_BYTES = 32 / Byte.SIZE;
+    int DOUBLE_BYTES = 64 / Byte.SIZE;
+  }
 
   public static final int CPU_DATA_MODEL;
   static {
@@ -73,8 +81,55 @@ public class Iq80DBFactory implements DBFactory {
     return (value == null) ? null : value.getBytes(StandardCharsets.UTF_8);
   }
 
+  public static byte[] bytes(int value) {
+    return ByteBuffer.allocate(TYPE_BYTES.INT_BYTES).putInt(value).array();
+  }
+
+  public static byte[] bytes(long value) {
+    return ByteBuffer.allocate(TYPE_BYTES.LONG_BYTES).putLong(value).array();
+  }
+
+  public static byte[] bytes(float value) {
+    return ByteBuffer.allocate(TYPE_BYTES.FLOAT_BYTES).putFloat(value).array();
+  }
+
+  public static byte[] bytes(double value) {
+    return ByteBuffer.allocate(TYPE_BYTES.DOUBLE_BYTES).putDouble(value).array();
+  }
+
+  public static byte[] bytes(boolean value) {
+    return ByteBuffer.allocate(TYPE_BYTES.LONG_BYTES).put((byte) (value ? 1 : 0)).array();
+  }
+
   public static String asString(byte[] value) {
     return (value == null) ? null : new String(value, StandardCharsets.UTF_8);
+  }
+
+  public static int asInt(byte[] value) {
+    //int MASK = 0xFF;
+    //int result = 0;
+    //result = value[0] & MASK;
+    //result = result + ((value[1] & MASK) << 8);
+    //result = result + ((value[2] & MASK) << 16);
+    //result = result + ((value[3] & MASK) << 24);
+    //return result;
+    return ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getInt();
+  }
+
+  public static long asLong(byte[] value) {
+    return ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getLong();
+  }
+
+  public static float asFloat(byte[] value) {
+    return ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+  }
+
+  public static double asDouble(byte[] value) {
+    return ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getDouble();
+  }
+
+  public static boolean asBoolean(byte[] value) {
+    return ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getInt() != 0;
   }
 
   @Override
@@ -83,13 +138,13 @@ public class Iq80DBFactory implements DBFactory {
   }
 
   @Override
-  public void destroy(File path, Options options) throws IOException {
+  public void destroy(File path, Options options) {
     // TODO: This should really only delete leveldb-created files.
     FileUtils.deleteRecursively(path);
   }
 
   @Override
-  public void repair(File path, Options options) throws IOException {
+  public void repair(File path, Options options) {
     throw new UnsupportedOperationException();
   }
 
