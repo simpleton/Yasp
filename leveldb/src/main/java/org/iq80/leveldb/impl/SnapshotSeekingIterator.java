@@ -17,7 +17,7 @@
  */
 package org.iq80.leveldb.impl;
 
-import com.google.common.collect.Maps;
+import java.util.AbstractMap;
 import java.util.Comparator;
 import java.util.Map.Entry;
 import org.iq80.leveldb.util.AbstractSeekingIterator;
@@ -64,7 +64,7 @@ public final class SnapshotSeekingIterator extends AbstractSeekingIterator<Slice
     // find the next user entry after the key we are about to return
     findNextUserEntry(next.getKey().getUserKey());
 
-    return Maps.immutableEntry(next.getKey().getUserKey(), next.getValue());
+    return new AbstractMap.SimpleImmutableEntry<>(next.getKey().getUserKey(), next.getValue());
   }
 
   private void findNextUserEntry(Slice deletedKey) {

@@ -17,21 +17,18 @@
  */
 package org.iq80.leveldb.impl;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.MapMaker;
-import com.google.common.collect.Maps;
-import com.google.common.io.Files;
+import android.text.TextUtils;
+import com.simsun.common.base.Utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +39,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import org.iq80.leveldb.table.UserComparator;
+import org.iq80.leveldb.util.Closeables;
+import org.iq80.leveldb.util.FileUtils;
 import org.iq80.leveldb.util.InternalIterator;
 import org.iq80.leveldb.util.Level0Iterator;
 import org.iq80.leveldb.util.MergingIterator;
@@ -60,12 +59,12 @@ public class VersionSet implements SeekingIterable<InternalKey, Slice> {
   // stop building a single file in a level.level+1 compaction.
   public static final long MAX_GRAND_PARENT_OVERLAP_BYTES = 10 * TARGET_FILE_SIZE;
   private static final int L0_COMPACTION_TRIGGER = 4;
+  final Map<Integer, InternalKey> compactPointers = new TreeMap<>();
+  final InternalKeyComparator internalKeyComparator;
   private final AtomicLong nextFileNumber = new AtomicLong(2);
-  private final Map<Version, Object> activeVersions = new MapMaker().weakKeys().makeMap();
+  private final Map<Version, Object> activeVersions = new HashMap<>();
   private final File databaseDir;
   private final TableCache tableCache;
-  private final InternalKeyComparator internalKeyComparator;
-  private final Map<Integer, InternalKey> compactPointers = new TreeMap<>();
   private long manifestFileNumber = 1;
   private Version current;
   private long lastSequence;
@@ -331,15 +330,16 @@ public class VersionSet implements SeekingIterable<InternalKey, Slice> {
     File currentFile = new File(databaseDir, Filename.currentFileName());
     checkState(currentFile.exists(), "CURRENT file does not exist");
 
-    String currentName = Files.toString(currentFile, UTF_8);
+    String currentName = FileUtils.readFile(currentFile, UTF_8);
     if (currentName.isEmpty() || currentName.charAt(currentName.length() - 1) != '\n') {
       throw new IllegalStateException("CURRENT file does not end with newline");
     }
     currentName = currentName.substring(0, currentName.length() - 1);
 
     // open file channel
-    try (FileInputStream fis = new FileInputStream(new File(databaseDir, currentName));
-         FileChannel fileChannel = fis.getChannel()) {
+    FileInputStream fis = new FileInputStream(new File(databaseDir, currentName));
+    FileChannel fileChannel = fis.getChannel();
+    try {
       // read log edit log
       Long nextFileNumber = null;
       Long lastSequence = null;
@@ -384,7 +384,7 @@ public class VersionSet implements SeekingIterable<InternalKey, Slice> {
         problems.add("Descriptor does not contain a last-sequence-number entry");
       }
       if (!problems.isEmpty()) {
-        throw new RuntimeException("Corruption: \n\t" + Joiner.on("\n\t").join(problems));
+        throw new RuntimeException("Corruption: \n\t" + TextUtils.join("\n\t", problems));
       }
 
       if (prevLogNumber == null) {
@@ -403,6 +403,9 @@ public class VersionSet implements SeekingIterable<InternalKey, Slice> {
       this.lastSequence = lastSequence;
       this.logNumber = logNumber;
       this.prevLogNumber = prevLogNumber;
+    } finally {
+      Closeables.closeQuietly(fis);
+      Closeables.closeQuietly(fileChannel);
     }
   }
 
@@ -446,11 +449,11 @@ public class VersionSet implements SeekingIterable<InternalKey, Slice> {
   }
 
   public List<FileMetaData> getLiveFiles() {
-    ImmutableList.Builder<FileMetaData> builder = ImmutableList.builder();
+    List<FileMetaData> list = new ArrayList<>();
     for (Version activeVersion : activeVersions.keySet()) {
-      builder.addAll(activeVersion.getFiles().values());
+      list.addAll(activeVersion.getFiles().values());
     }
-    return builder.build();
+    return Collections.unmodifiableList(list);
   }
 
   public boolean needsCompaction() {
@@ -494,8 +497,9 @@ public class VersionSet implements SeekingIterable<InternalKey, Slice> {
         levelInputs.add(current.getFiles(level).get(0));
       }
     } else if (seekCompaction) {
+      current.getFileToCompact();
       level = current.getFileToCompactLevel();
-      levelInputs = ImmutableList.of(current.getFileToCompact());
+      levelInputs = Collections.singletonList(current.getFileToCompact());
     } else {
       return null;
     }
@@ -586,7 +590,7 @@ public class VersionSet implements SeekingIterable<InternalKey, Slice> {
   }
 
   List<FileMetaData> getOverlappingInputs(int level, InternalKey begin, InternalKey end) {
-    ImmutableList.Builder<FileMetaData> files = ImmutableList.builder();
+    List<FileMetaData> files = new ArrayList<>();
     Slice userBegin = begin.getUserKey();
     Slice userEnd = end.getUserKey();
     UserComparator userComparator = internalKeyComparator.getUserComparator();
@@ -598,7 +602,7 @@ public class VersionSet implements SeekingIterable<InternalKey, Slice> {
         files.add(fileMetaData);
       }
     }
-    return files.build();
+    return Collections.unmodifiableList(files);
   }
 
   private Entry<InternalKey, InternalKey> getRange(List<FileMetaData>... inputLists) {
@@ -619,7 +623,7 @@ public class VersionSet implements SeekingIterable<InternalKey, Slice> {
         }
       }
     }
-    return Maps.immutableEntry(smallest, largest);
+    return new AbstractMap.SimpleImmutableEntry<>(smallest, largest);
   }
 
   public long getMaxNextLevelOverlappingBytes() {
@@ -648,7 +652,7 @@ public class VersionSet implements SeekingIterable<InternalKey, Slice> {
     private final Version baseVersion;
     private final List<LevelState> levels;
 
-    private Builder(VersionSet versionSet, Version baseVersion) {
+    Builder(VersionSet versionSet, Version baseVersion) {
       this.versionSet = versionSet;
       this.baseVersion = baseVersion;
 
@@ -716,13 +720,13 @@ public class VersionSet implements SeekingIterable<InternalKey, Slice> {
         // Merge the set of added files with the set of pre-existing files.
         // Drop any deleted files.  Store the result in *v.
 
-        Collection<FileMetaData> baseFiles = baseVersion.getFiles().asMap().get(level);
+        Collection<FileMetaData> baseFiles = baseVersion.getFiles().get(level);
         if (baseFiles == null) {
-          baseFiles = ImmutableList.of();
+          baseFiles = new ArrayList<>();
         }
         SortedSet<FileMetaData> addedFiles = levels.get(level).addedFiles;
         if (addedFiles == null) {
-          addedFiles = ImmutableSortedSet.of();
+          addedFiles = new TreeSet<>();
         }
 
         // files must be added in sorted order so assertion check in maybeAddFile works
@@ -773,26 +777,26 @@ public class VersionSet implements SeekingIterable<InternalKey, Slice> {
     private static class FileMetaDataBySmallestKey implements Comparator<FileMetaData> {
       private final InternalKeyComparator internalKeyComparator;
 
-      private FileMetaDataBySmallestKey(InternalKeyComparator internalKeyComparator) {
+      FileMetaDataBySmallestKey(InternalKeyComparator internalKeyComparator) {
         this.internalKeyComparator = internalKeyComparator;
       }
 
       @Override
       public int compare(FileMetaData f1, FileMetaData f2) {
-        return ComparisonChain.start()
-            .compare(f1.getSmallest(), f2.getSmallest(), internalKeyComparator)
-            .compare(f1.getNumber(), f2.getNumber())
-            .result();
+        int result = internalKeyComparator.compare(f1.getSmallest(), f2.getSmallest());
+        if (result == 0) {
+          result = Utils.compare(f1.getNumber(), f2.getNumber());
+        }
+        return result;
       }
     }
 
     private static class LevelState {
-      private final SortedSet<FileMetaData> addedFiles;
-      private final Set<Long> deletedFiles = new HashSet<Long>();
+      final SortedSet<FileMetaData> addedFiles;
+      final Set<Long> deletedFiles = new HashSet<>();
 
       public LevelState(InternalKeyComparator internalKeyComparator) {
-        addedFiles =
-            new TreeSet<FileMetaData>(new FileMetaDataBySmallestKey(internalKeyComparator));
+        addedFiles = new TreeSet<>(new FileMetaDataBySmallestKey(internalKeyComparator));
       }
 
       @Override

@@ -17,10 +17,8 @@
  */
 package org.iq80.leveldb.impl;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
+import com.simsun.common.base.MultiMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import org.iq80.leveldb.util.DynamicSliceOutput;
@@ -30,8 +28,8 @@ import org.iq80.leveldb.util.VariableLengthQuantity;
 
 public class VersionEdit {
   private final Map<Integer, InternalKey> compactPointers = new TreeMap<>();
-  private final Multimap<Integer, FileMetaData> newFiles = ArrayListMultimap.create();
-  private final Multimap<Integer, Long> deletedFiles = ArrayListMultimap.create();
+  private final MultiMap<Integer, FileMetaData> newFiles = new MultiMap<>();
+  private final MultiMap<Integer, Long> deletedFiles = new MultiMap<>();
   private String comparatorName;
   private Long logNumber;
   private Long nextFileNumber;
@@ -91,7 +89,7 @@ public class VersionEdit {
   }
 
   public Map<Integer, InternalKey> getCompactPointers() {
-    return ImmutableMap.copyOf(compactPointers);
+    return Collections.unmodifiableMap(compactPointers);
   }
 
   public void setCompactPointers(Map<Integer, InternalKey> compactPointers) {
@@ -102,8 +100,8 @@ public class VersionEdit {
     compactPointers.put(level, key);
   }
 
-  public Multimap<Integer, FileMetaData> getNewFiles() {
-    return ImmutableMultimap.copyOf(newFiles);
+  public MultiMap<Integer, FileMetaData> getNewFiles() {
+    return newFiles.createImmutableClone();
   }
 
   // Add the specified file at the specified level.
@@ -119,12 +117,12 @@ public class VersionEdit {
     newFiles.put(level, fileMetaData);
   }
 
-  public void addFiles(Multimap<Integer, FileMetaData> files) {
+  public void addFiles(MultiMap<Integer, FileMetaData> files) {
     newFiles.putAll(files);
   }
 
-  public Multimap<Integer, Long> getDeletedFiles() {
-    return ImmutableMultimap.copyOf(deletedFiles);
+  public MultiMap<Integer, Long> getDeletedFiles() {
+    return deletedFiles.createImmutableClone();
   }
 
   // Delete the specified "file" from the specified "level".

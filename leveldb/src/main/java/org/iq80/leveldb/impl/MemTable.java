@@ -18,6 +18,7 @@
 package org.iq80.leveldb.impl;
 
 import com.simsun.common.base.PeekingIterator;
+import com.simsun.common.base.PeekingIteratorImpl;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -83,7 +84,7 @@ public class MemTable implements SeekingIterable<InternalKey, Slice> {
     private PeekingIterator<Entry<InternalKey, Slice>> iterator;
 
     public MemTableIterator() {
-      iterator = Iterators.peekingIterator(table.entrySet().iterator());
+      iterator = new PeekingIteratorImpl<>(table.entrySet().iterator());
     }
 
     @Override
@@ -93,12 +94,12 @@ public class MemTable implements SeekingIterable<InternalKey, Slice> {
 
     @Override
     public void seekToFirst() {
-      iterator = Iterators.peekingIterator(table.entrySet().iterator());
+      iterator = new PeekingIteratorImpl<>(table.entrySet().iterator());
     }
 
     @Override
     public void seek(InternalKey targetKey) {
-      iterator = Iterators.peekingIterator(table.tailMap(targetKey).entrySet().iterator());
+      iterator = new PeekingIteratorImpl<>(table.tailMap(targetKey).entrySet().iterator());
     }
 
     @Override

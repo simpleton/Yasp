@@ -19,11 +19,13 @@ package org.iq80.leveldb.util;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -190,5 +192,19 @@ public final class FileUtils {
       Closeables.closeQuietly(in);
       Closeables.closeQuietly(out);
     }
+  }
+
+  public static String readFile(File src, Charset charset) throws IOException {
+    InputStream in = new FileInputStream(src);
+    StringBuilder stringBuilder = new StringBuilder();
+    try {
+      byte[] buffer = new byte[4096];
+      while (in.read(buffer) != -1) {
+        stringBuilder.append(new String(buffer, charset));
+      }
+    } finally {
+      Closeables.closeQuietly(in);
+    }
+    return stringBuilder.toString();
   }
 }

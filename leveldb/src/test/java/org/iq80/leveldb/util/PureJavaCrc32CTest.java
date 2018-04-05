@@ -17,12 +17,11 @@
  */
 package org.iq80.leveldb.util;
 
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
-
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.function.Function;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.iq80.leveldb.util.PureJavaCrc32C.mask;
@@ -30,94 +29,94 @@ import static org.iq80.leveldb.util.PureJavaCrc32C.unmask;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 
-public class PureJavaCrc32CTest
-{
-    @Test(dataProvider = "crcs")
-    public void testCrc(int expectedCrc, byte[] data)
-    {
-        assertEquals(expectedCrc, computeCrc(data));
+public class PureJavaCrc32CTest {
+  private static int computeCrc(byte[] data) {
+    PureJavaCrc32C crc = new PureJavaCrc32C();
+    crc.update(data, 0, data.length);
+    return crc.getIntValue();
+  }
+
+  private static byte[] arrayOf(int size, byte value) {
+    byte[] result = new byte[size];
+    Arrays.fill(result, value);
+    return result;
+  }
+
+  @SuppressWarnings("ConstantConditions")
+  private static byte[] arrayOf(int size, Function<Integer, Byte> generator) {
+    byte[] result = new byte[size];
+    for (int i = 0; i < result.length; ++i) {
+      result[i] = generator.apply(i);
     }
 
-    @DataProvider(name = "crcs")
-    public Object[][] data()
-    {
-        return new Object[][] {
-                new Object[] {0x8a9136aa, arrayOf(32, (byte) 0)},
-                new Object[] {0x62a8ab43, arrayOf(32, (byte) 0xff)},
-                new Object[] {0x46dd794e, arrayOf(32, position -> (byte) position.intValue())},
-                new Object[] {0x113fdb5c, arrayOf(32, position -> (byte) (31 - position))},
-                new Object[] {0xd9963a56, arrayOf(new int[] {
-                        0x01, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00,
-                        0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x18, 0x28, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})}
-        };
+    return result;
+  }
+
+  private static byte[] arrayOf(int[] bytes) {
+    byte[] result = new byte[bytes.length];
+    for (int i = 0; i < result.length; ++i) {
+      result[i] = (byte) bytes[i];
     }
 
-    @Test
-    public void testProducesDifferentCrcs()
-            throws UnsupportedEncodingException
-    {
-        assertFalse(computeCrc("a".getBytes(US_ASCII)) == computeCrc("foo".getBytes(US_ASCII)));
-    }
+    return result;
+  }
 
-    @Test
-    public void testComposes()
-            throws UnsupportedEncodingException
-    {
-        PureJavaCrc32C crc = new PureJavaCrc32C();
-        crc.update("hello ".getBytes(US_ASCII), 0, 6);
-        crc.update("world".getBytes(US_ASCII), 0, 5);
+  @Test(dataProvider = "crcs")
+  public void testCrc(int expectedCrc, byte[] data) {
+    assertEquals(expectedCrc, computeCrc(data));
+  }
 
-        assertEquals(crc.getIntValue(), computeCrc("hello world".getBytes(US_ASCII)));
-    }
+  @DataProvider(name = "crcs")
+  public Object[][] data() {
+    return new Object[][] {
+        new Object[] {0x8a9136aa, arrayOf(32, (byte) 0)},
+        new Object[] {0x62a8ab43, arrayOf(32, (byte) 0xff)},
+        new Object[] {0x46dd794e, arrayOf(32, new Function<Integer, Byte>() {
+          @Override
+          public Byte apply(Integer integer) {
+            return (byte) integer.intValue();
+          }
+        })},
+        new Object[] {0x113fdb5c, arrayOf(32, new Function<Integer, Byte>() {
+          @Override
+          public Byte apply(Integer integer) {
+            return (byte) (31 - integer);
+          }
+        })},
+        new Object[] {0xd9963a56, arrayOf(new int[] {
+            0x01, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00,
+            0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x18, 0x28, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})}
+    };
+  }
 
-    @Test
-    public void testMask()
-            throws UnsupportedEncodingException
-    {
-        PureJavaCrc32C crc = new PureJavaCrc32C();
-        crc.update("foo".getBytes(US_ASCII), 0, 3);
+  @Test
+  public void testProducesDifferentCrcs() throws UnsupportedEncodingException {
+    assertFalse(computeCrc("a".getBytes(US_ASCII)) == computeCrc("foo".getBytes(US_ASCII)));
+  }
 
-        assertEquals(crc.getMaskedValue(), mask(crc.getIntValue()));
-        assertFalse(crc.getIntValue() == crc.getMaskedValue(), "crc should not match masked crc");
-        assertFalse(crc.getIntValue() == mask(crc.getMaskedValue()), "crc should not match double masked crc");
-        assertEquals(crc.getIntValue(), unmask(crc.getMaskedValue()));
-        assertEquals(crc.getIntValue(), unmask(unmask(mask(crc.getMaskedValue()))));
-    }
+  @Test
+  public void testComposes() throws UnsupportedEncodingException {
+    PureJavaCrc32C crc = new PureJavaCrc32C();
+    crc.update("hello ".getBytes(US_ASCII), 0, 6);
+    crc.update("world".getBytes(US_ASCII), 0, 5);
 
-    private static int computeCrc(byte[] data)
-    {
-        PureJavaCrc32C crc = new PureJavaCrc32C();
-        crc.update(data, 0, data.length);
-        return crc.getIntValue();
-    }
+    assertEquals(crc.getIntValue(), computeCrc("hello world".getBytes(US_ASCII)));
+  }
 
-    private static byte[] arrayOf(int size, byte value)
-    {
-        byte[] result = new byte[size];
-        Arrays.fill(result, value);
-        return result;
-    }
+  @Test
+  public void testMask() throws UnsupportedEncodingException {
+    PureJavaCrc32C crc = new PureJavaCrc32C();
+    crc.update("foo".getBytes(US_ASCII), 0, 3);
 
-    @SuppressWarnings("ConstantConditions")
-    private static byte[] arrayOf(int size, Function<Integer, Byte> generator)
-    {
-        byte[] result = new byte[size];
-        for (int i = 0; i < result.length; ++i) {
-            result[i] = generator.apply(i);
-        }
-
-        return result;
-    }
-
-    private static byte[] arrayOf(int[] bytes)
-    {
-        byte[] result = new byte[bytes.length];
-        for (int i = 0; i < result.length; ++i) {
-            result[i] = (byte) bytes[i];
-        }
-
-        return result;
-    }
+    assertEquals(crc.getMaskedValue(), mask(crc.getIntValue()));
+    assertFalse(crc.getIntValue() == crc.getMaskedValue(), "crc should not match masked crc");
+    assertFalse(
+        crc.getIntValue() == mask(crc.getMaskedValue()),
+        "crc should not match double masked crc"
+    );
+    assertEquals(crc.getIntValue(), unmask(crc.getMaskedValue()));
+    assertEquals(crc.getIntValue(), unmask(unmask(mask(crc.getMaskedValue()))));
+  }
 }

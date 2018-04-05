@@ -17,12 +17,10 @@
  */
 package org.iq80.leveldb.impl;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
+import com.simsun.common.base.MultiMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.iq80.leveldb.util.InternalIterator;
@@ -32,8 +30,7 @@ import org.iq80.leveldb.util.MergingIterator;
 import org.iq80.leveldb.util.Slice;
 
 import static com.simsun.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkPositionIndex;
-import static com.google.common.collect.Ordering.natural;
+import static com.simsun.common.base.Preconditions.checkPositionIndex;
 import static com.simsun.common.base.Utils.requireNonNull;
 import static org.iq80.leveldb.impl.DbConstants.MAX_MEM_COMPACT_LEVEL;
 import static org.iq80.leveldb.impl.DbConstants.NUM_LEVELS;
@@ -60,12 +57,12 @@ public class Version implements SeekingIterable<InternalKey, Slice> {
     this.level0 =
         new Level0(new ArrayList<FileMetaData>(), getTableCache(), getInternalKeyComparator());
 
-    Builder<Level> builder = ImmutableList.builder();
+    List<Level> levelList = new ArrayList<>();
     for (int i = 1; i < NUM_LEVELS; i++) {
       List<FileMetaData> files = new ArrayList<>();
-      builder.add(new Level(i, files, getTableCache(), getInternalKeyComparator()));
+      levelList.add(new Level(i, files, getTableCache(), getInternalKeyComparator()));
     }
-    this.levels = builder.build();
+    this.levels = Collections.unmodifiableList(levelList);
   }
 
   public void assertNoOverlappingFiles() {
@@ -76,7 +73,7 @@ public class Version implements SeekingIterable<InternalKey, Slice> {
 
   public void assertNoOverlappingFiles(int level) {
     if (level > 0) {
-      Collection<FileMetaData> files = getFiles().asMap().get(level);
+      Collection<FileMetaData> files = getFiles().get(level);
       if (files != null) {
         long previousFileNumber = 0;
         InternalKey previousEnd = null;
@@ -124,28 +121,28 @@ public class Version implements SeekingIterable<InternalKey, Slice> {
 
   @Override
   public MergingIterator iterator() {
-    Builder<InternalIterator> builder = ImmutableList.builder();
-    builder.add(level0.iterator());
-    builder.addAll(getLevelIterators());
-    return new MergingIterator(builder.build(), getInternalKeyComparator());
+    List<InternalIterator> list = new ArrayList<>();
+    list.add(level0.iterator());
+    list.addAll(getLevelIterators());
+    return new MergingIterator(Collections.unmodifiableList(list), getInternalKeyComparator());
   }
 
   List<InternalTableIterator> getLevel0Files() {
-    Builder<InternalTableIterator> builder = ImmutableList.builder();
+    List<InternalTableIterator> list = new ArrayList<>();
     for (FileMetaData file : level0.getFiles()) {
-      builder.add(getTableCache().newIterator(file));
+      list.add(getTableCache().newIterator(file));
     }
-    return builder.build();
+    return Collections.unmodifiableList(list);
   }
 
   List<LevelIterator> getLevelIterators() {
-    Builder<LevelIterator> builder = ImmutableList.builder();
+    List<LevelIterator> list = new ArrayList<>();
     for (Level level : levels) {
       if (!level.getFiles().isEmpty()) {
-        builder.add(level.iterator());
+        list.add(level.iterator());
       }
     }
-    return builder.build();
+    return Collections.unmodifiableList(list);
   }
 
   public LookupResult get(LookupKey key) {
@@ -211,16 +208,14 @@ public class Version implements SeekingIterable<InternalKey, Slice> {
     }
   }
 
-  public Multimap<Integer, FileMetaData> getFiles() {
-    ImmutableMultimap.Builder<Integer, FileMetaData> builder = ImmutableMultimap.builder();
-    builder = builder.orderKeysBy(natural());
+  public MultiMap<Integer, FileMetaData> getFiles() {
+    MultiMap<Integer, FileMetaData> multiMap = new MultiMap<>();
 
-    builder.putAll(0, level0.getFiles());
-
+    multiMap.putAll(0, level0.getFiles());
     for (Level level : levels) {
-      builder.putAll(level.getLevelNumber(), level.getFiles());
+      multiMap.putAll(level.getLevelNumber(), level.getFiles());
     }
-    return builder.build();
+    return multiMap;
   }
 
   public List<FileMetaData> getFiles(int level) {

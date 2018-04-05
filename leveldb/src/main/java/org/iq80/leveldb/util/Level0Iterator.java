@@ -17,7 +17,10 @@
  */
 package org.iq80.leveldb.util;
 
+import android.text.TextUtils;
 import com.simsun.common.base.Utils;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -39,14 +42,14 @@ public final class Level0Iterator extends AbstractSeekingIterator<InternalKey, S
       TableCache tableCache,
       List<FileMetaData> files,
       Comparator<InternalKey> comparator) {
-    Builder<InternalTableIterator> builder = ImmutableList.builder();
+    List<InternalTableIterator> list = new ArrayList<>();
     for (FileMetaData file : files) {
-      builder.add(tableCache.newIterator(file));
+      list.add(tableCache.newIterator(file));
     }
-    this.inputs = builder.build();
+    this.inputs = Collections.unmodifiableList(list);
     this.comparator = comparator;
 
-    this.priorityQueue = new PriorityQueue<>(Iterables.size(inputs) + 1);
+    this.priorityQueue = new PriorityQueue<>(inputs.size() + 1);
     resetPriorityQueue(comparator);
   }
 
@@ -54,7 +57,7 @@ public final class Level0Iterator extends AbstractSeekingIterator<InternalKey, S
     this.inputs = inputs;
     this.comparator = comparator;
 
-    this.priorityQueue = new PriorityQueue<>(Iterables.size(inputs));
+    this.priorityQueue = new PriorityQueue<>(inputs.size());
     resetPriorityQueue(comparator);
   }
 
@@ -100,7 +103,7 @@ public final class Level0Iterator extends AbstractSeekingIterator<InternalKey, S
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("MergingIterator");
-    sb.append("{inputs=").append(Iterables.toString(inputs));
+    sb.append("{inputs=").append(TextUtils.join("", inputs));
     sb.append(", comparator=").append(comparator);
     sb.append('}');
     return sb.toString();
@@ -113,7 +116,7 @@ public final class Level0Iterator extends AbstractSeekingIterator<InternalKey, S
     private final int ordinal;
     private Entry<InternalKey, Slice> nextElement;
 
-    private ComparableIterator(
+    ComparableIterator(
         SeekingIterator<InternalKey, Slice> iterator,
         Comparator<InternalKey> comparator,
         int ordinal,
