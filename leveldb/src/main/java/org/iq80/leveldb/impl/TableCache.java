@@ -50,13 +50,6 @@ public class TableCache {
     this.userComparator = userComparator;
     this.verifyChecksums = verifyChecksums;
     this.databaseDir = databaseDir;
-    //.removalListener(new RemovalListener<Long, TableAndFile>() {
-    //  @Override
-    //  public void onRemoval(RemovalNotification<Long, TableAndFile> notification) {
-    //    Table table = notification.getValue().getTable();
-    //    finalizer.addCleanup(table, table.closer());
-    //  }
-    //})
     //.build(new CacheLoader<Long, TableAndFile>() {
     //  @Override
     //  public TableAndFile load(Long fileNumber) throws IOException {
@@ -82,11 +75,11 @@ public class TableCache {
     if (tableAndFile == null) {
       try {
         tableAndFile = new TableAndFile(this.databaseDir, number, userComparator, verifyChecksums);
+        cache.put(number, tableAndFile);
       } catch (IOException e) {
         e.printStackTrace();
       }
     }
-    cache.put(number, tableAndFile);
     return tableAndFile.getTable();
   }
 
@@ -148,7 +141,9 @@ public class TableCache {
         TableAndFile oldValue,
         TableAndFile newValue) {
       super.entryRemoved(evicted, key, oldValue, newValue);
-      oldValue.getTable().close();
+      if (oldValue != newValue) {
+        oldValue.getTable().close();
+      }
     }
   }
 }
