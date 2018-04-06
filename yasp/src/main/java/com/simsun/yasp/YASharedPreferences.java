@@ -59,7 +59,7 @@ public class YASharedPreferences implements SharedPreferences {
   public int getInt(String key, int defValue) {
     int value = defValue;
     try {
-      value = asInt(db.get(bytes(key)));
+      value = asInt(db.get(bytes(key)), defValue);
     } catch (DBException e) {
       Log.e(TAG, "DB Exception", e);
     }
@@ -70,7 +70,7 @@ public class YASharedPreferences implements SharedPreferences {
   public long getLong(String key, long defValue) {
     long value = defValue;
     try {
-      value = asLong(db.get(bytes(key)));
+      value = asLong(db.get(bytes(key)), defValue);
     } catch (DBException e) {
       Log.e(TAG, "DB Exception", e);
     }
@@ -81,7 +81,7 @@ public class YASharedPreferences implements SharedPreferences {
   public float getFloat(String key, float defValue) {
     float value = defValue;
     try {
-      value = asFloat(db.get(bytes(key)));
+      value = asFloat(db.get(bytes(key)), defValue);
     } catch (DBException e) {
       Log.e(TAG, "DB Exception", e);
     }
@@ -92,7 +92,7 @@ public class YASharedPreferences implements SharedPreferences {
   public boolean getBoolean(String key, boolean defValue) {
     boolean value = defValue;
     try {
-      value = asBoolean(db.get(bytes(key)));
+      value = asBoolean(db.get(bytes(key)), defValue);
     } catch (DBException e) {
       Log.e(TAG, "DB Exception", e);
     }
@@ -103,7 +103,7 @@ public class YASharedPreferences implements SharedPreferences {
   public boolean contains(String key) {
     try {
       byte[] value = db.get(bytes(key));
-      return value.length > 0;
+      return value != null && value.length > 0;
     } catch (DBException e) {
       return false;
     }

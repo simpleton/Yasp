@@ -18,6 +18,7 @@
 package org.iq80.leveldb.impl;
 
 import android.text.TextUtils;
+import android.util.Log;
 import com.simsun.common.base.Utils;
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,6 +55,8 @@ import static org.iq80.leveldb.impl.DbConstants.NUM_LEVELS;
 import static org.iq80.leveldb.impl.LogMonitors.throwExceptionMonitor;
 
 public class VersionSet implements SeekingIterable<InternalKey, Slice> {
+  public static final String TAG = "VersionSet";
+
   public static final int TARGET_FILE_SIZE = 2 * 1048576;
   // Maximum bytes of overlaps in grandparent (i.e., level+2) before we
   // stop building a single file in a level.level+1 compaction.
@@ -331,6 +334,11 @@ public class VersionSet implements SeekingIterable<InternalKey, Slice> {
     checkState(currentFile.exists(), "CURRENT file does not exist");
 
     String currentName = FileUtils.readFile(currentFile, UTF_8);
+    Log.e(TAG, currentName);
+    Log.e(
+        TAG,
+        String.format("%s : %s", currentName.charAt(currentName.length() - 1), currentName.length())
+    );
     if (currentName.isEmpty() || currentName.charAt(currentName.length() - 1) != '\n') {
       throw new IllegalStateException("CURRENT file does not end with newline");
     }

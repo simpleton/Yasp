@@ -37,14 +37,21 @@ public class TableCache {
   private final LruCache<Long, TableAndFile> cache;
   private final Finalizer<Table> finalizer = new Finalizer<>(1);
 
+  final UserComparator userComparator;
+  final boolean verifyChecksums;
+  final File databaseDir;
+
   public TableCache(
       final File databaseDir,
-      int tableCacheSize,
+      final int tableCacheSize,
       final UserComparator userComparator,
       final boolean verifyChecksums) {
     requireNonNull(databaseDir, "databaseName is null");
 
     cache = new LruCache<>(tableCacheSize);
+    this.userComparator = userComparator;
+    this.verifyChecksums = verifyChecksums;
+    this.databaseDir = databaseDir;
     //.removalListener(new RemovalListener<Long, TableAndFile>() {
     //  @Override
     //  public void onRemoval(RemovalNotification<Long, TableAndFile> notification) {
@@ -73,9 +80,16 @@ public class TableCache {
   }
 
   private Table getTable(long number) {
-    Table table;
-    table = cache.get(number).getTable();
-    return table;
+    TableAndFile tableAndFile = cache.get(number);
+    if (tableAndFile == null) {
+      try {
+        tableAndFile = new TableAndFile(this.databaseDir, number, userComparator, verifyChecksums);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    cache.put(number, tableAndFile);
+    return tableAndFile.getTable();
   }
 
   public void close() {
@@ -90,9 +104,11 @@ public class TableCache {
   private static final class TableAndFile {
     final Table table;
 
-    private TableAndFile(
-        File databaseDir, long fileNumber, UserComparator userComparator, boolean verifyChecksums)
-        throws IOException {
+    TableAndFile(
+        File databaseDir,
+        long fileNumber,
+        UserComparator userComparator,
+        boolean verifyChecksums) throws IOException {
       String tableFileName = Filename.tableFileName(fileNumber);
       File tableFile = new File(databaseDir, tableFileName);
       FileInputStream fis = new FileInputStream(tableFile);

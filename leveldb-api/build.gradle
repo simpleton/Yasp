@@ -1,25 +1,24 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion project.CompileSdkVersion
+  compileSdkVersion project.CompileSdkVersion
 
-    defaultConfig {
-        minSdkVersion project.MinSdkVersion
-        targetSdkVersion project.TargetSdkVersion
-        versionCode 1
-        versionName "1.0"
+  defaultConfig {
+    minSdkVersion project.MinSdkVersion
+    targetSdkVersion project.TargetSdkVersion
+    versionCode 1
+    versionName "1.0"
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-
+  }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+  implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
 

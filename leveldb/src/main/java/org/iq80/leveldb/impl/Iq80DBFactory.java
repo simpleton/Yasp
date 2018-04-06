@@ -45,37 +45,13 @@ public class Iq80DBFactory implements DBFactory {
     int DOUBLE_BYTES = 64 / Byte.SIZE;
   }
 
-  public static final int CPU_DATA_MODEL;
-  static {
-    boolean is64bit;
-    if (System.getProperty("os.name").contains("Windows")) {
-      is64bit = System.getenv("ProgramFiles(x86)") != null;
-    } else {
-      is64bit = System.getProperty("os.arch").contains("64");
-    }
-    CPU_DATA_MODEL = is64bit ? 64 : 32;
-  }
 
-  // We only use MMAP on 64 bit systems since it's really easy to run out of
-  // virtual address space on a 32 bit system when all the data is getting mapped
-  // into memory.  If you really want to use MMAP anyways, use -Dleveldb.mmap=true
-  public static final boolean USE_MMAP =
-      Boolean.parseBoolean(System.getProperty("leveldb.mmap", "" + (CPU_DATA_MODEL > 32)));
-  public static final String VERSION;
+  //// We only use MMAP on 64 bit systems since it's really easy to run out of
+  //// virtual address space on a 32 bit system when all the data is getting mapped
+  //// into memory.  If you really want to use MMAP anyways, use -Dleveldb.mmap=true
+  public static final boolean USE_MMAP = false;
+  public static final String VERSION = "1";
   public static final Iq80DBFactory factory = new Iq80DBFactory();
-
-  static {
-    String v = "unknown";
-    InputStream is = Iq80DBFactory.class.getResourceAsStream("version.txt");
-    try {
-      v = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).readLine();
-    } catch (IOException e) {
-      Log.e(TAG, "", e);
-    } finally {
-      Closeables.closeQuietly(is);
-    }
-    VERSION = v;
-  }
 
   public static byte[] bytes(String value) {
     return (value == null) ? null : value.getBytes(StandardCharsets.UTF_8);
@@ -105,31 +81,44 @@ public class Iq80DBFactory implements DBFactory {
     return (value == null) ? null : new String(value, StandardCharsets.UTF_8);
   }
 
-  public static int asInt(byte[] value) {
-    //int MASK = 0xFF;
-    //int result = 0;
-    //result = value[0] & MASK;
-    //result = result + ((value[1] & MASK) << 8);
-    //result = result + ((value[2] & MASK) << 16);
-    //result = result + ((value[3] & MASK) << 24);
-    //return result;
-    return ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getInt();
+  public static int asInt(byte[] value, int defValue) {
+    if (value != null) {
+      return ByteBuffer.wrap(value).getInt();
+    } else {
+      return defValue;
+    }
   }
 
-  public static long asLong(byte[] value) {
-    return ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getLong();
+  public static long asLong(byte[] value, long defValue) {
+    if (value != null) {
+      return ByteBuffer.wrap(value).getLong();
+    } else {
+      return defValue;
+    }
   }
 
-  public static float asFloat(byte[] value) {
-    return ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+  public static float asFloat(byte[] value, float defValue) {
+    if (value != null) {
+      return ByteBuffer.wrap(value).getFloat();
+    } else {
+      return defValue;
+    }
   }
 
-  public static double asDouble(byte[] value) {
-    return ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getDouble();
+  public static double asDouble(byte[] value, double defValue) {
+    if (value != null) {
+      return ByteBuffer.wrap(value).getDouble();
+    } else {
+      return defValue;
+    }
   }
 
-  public static boolean asBoolean(byte[] value) {
-    return ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getInt() != 0;
+  public static boolean asBoolean(byte[] value, boolean defValue) {
+    if (value != null) {
+      return ByteBuffer.wrap(value).getInt() != 0;
+    } else {
+      return defValue;
+    }
   }
 
   @Override

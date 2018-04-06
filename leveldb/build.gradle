@@ -1,30 +1,29 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion project.CompileSdkVersion
+  compileSdkVersion project.CompileSdkVersion
 
-    defaultConfig {
-        minSdkVersion project.MinSdkVersion
-        targetSdkVersion project.TargetSdkVersion
-        versionCode 1
-        versionName "1.0"
+  defaultConfig {
+    minSdkVersion project.MinSdkVersion
+    targetSdkVersion project.TargetSdkVersion
+    versionCode 1
+    versionName "1.0"
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-
+  }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation project(path: ':leveldb-api')
+  implementation fileTree(dir: 'libs', include: ['*.jar'])
+  implementation project(path: ':leveldb-api')
 
-    implementation "com.android.support:appcompat-v7:${project.AndroidSupportVersion}"
+  implementation "com.android.support:appcompat-v7:${project.AndroidSupportVersion}"
 
-    testImplementation "org.testng:testng:6.14.2"
-    testImplementation "junit:junit:${project.JunitVersion}"
+  testImplementation "org.testng:testng:6.14.2"
+  testImplementation "junit:junit:${project.JunitVersion}"
 }

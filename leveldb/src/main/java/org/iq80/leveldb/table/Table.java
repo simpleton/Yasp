@@ -89,9 +89,8 @@ public abstract class Table implements SeekingIterable<Slice, Slice> {
 
   protected abstract Block readBlock(BlockHandle blockHandle) throws IOException;
 
-  protected int uncompressedLength(ByteBuffer data) throws IOException {
-    int length = VariableLengthQuantity.readVariableLengthInt(data.duplicate());
-    return length;
+  protected int uncompressedLength(ByteBuffer data) {
+    return VariableLengthQuantity.readVariableLengthInt(data.duplicate());
   }
 
   /**

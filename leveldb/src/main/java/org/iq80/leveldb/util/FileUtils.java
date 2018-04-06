@@ -17,6 +17,7 @@
  */
 package org.iq80.leveldb.util;
 
+import android.util.StringBuilderPrinter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -25,6 +26,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -184,9 +186,9 @@ public final class FileUtils {
     OutputStream out = new FileOutputStream(target);
     try {
       byte[] buffer = new byte[4096];
-      int read;
-      while ((read = in.read(buffer)) != -1) {
-        out.write(buffer, 0, read);
+      int count;
+      while ((count = in.read(buffer)) != -1) {
+        out.write(buffer, 0, count);
       }
     } finally {
       Closeables.closeQuietly(in);
@@ -196,15 +198,16 @@ public final class FileUtils {
 
   public static String readFile(File src, Charset charset) throws IOException {
     InputStream in = new FileInputStream(src);
-    StringBuilder stringBuilder = new StringBuilder();
+    StringBuilder sb = new StringBuilder();
     try {
       byte[] buffer = new byte[4096];
-      while (in.read(buffer) != -1) {
-        stringBuilder.append(new String(buffer, charset));
+      int count;
+      while ((count = in.read(buffer)) != -1) {
+        sb.append(new String(buffer, 0, count));
       }
     } finally {
       Closeables.closeQuietly(in);
     }
-    return stringBuilder.toString();
+    return sb.toString();
   }
 }
