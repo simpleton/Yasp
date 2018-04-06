@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">yasp</string>
+  <string name="app_name">YASP</string>
+  <string name="title_activity_main">YASP-SAMPLE</string>
 </resources>
