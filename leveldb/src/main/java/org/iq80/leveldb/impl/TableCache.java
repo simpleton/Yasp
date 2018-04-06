@@ -50,12 +50,6 @@ public class TableCache {
     this.userComparator = userComparator;
     this.verifyChecksums = verifyChecksums;
     this.databaseDir = databaseDir;
-    //.build(new CacheLoader<Long, TableAndFile>() {
-    //  @Override
-    //  public TableAndFile load(Long fileNumber) throws IOException {
-    //    return new TableAndFile(databaseDir, fileNumber, userComparator, verifyChecksums);
-    //  }
-    //});
   }
 
   public InternalTableIterator newIterator(FileMetaData file) {

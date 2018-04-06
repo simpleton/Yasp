@@ -272,11 +272,9 @@ public class DbImpl implements DB {
     }
     try {
       versions.destroy();
-    } catch (IOException ignored) {
-    }
-    try {
       log.close();
     } catch (IOException ignored) {
+      Log.e(TAG, "err occurred during close", ignored);
     }
     tableCache.close();
     dbLock.release();
