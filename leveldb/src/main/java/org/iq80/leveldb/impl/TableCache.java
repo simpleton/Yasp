@@ -34,7 +34,6 @@ import static com.simsun.common.base.Utils.requireNonNull;
 
 public class TableCache {
   private final TableLruCache cache;
-  private final Finalizer<Table> finalizer = new Finalizer<>(1);
 
   final UserComparator userComparator;
   final boolean verifyChecksums;
@@ -93,7 +92,6 @@ public class TableCache {
 
   public void close() {
     cache.evictAll();
-    finalizer.destroy();
   }
 
   public void evict(long number) {

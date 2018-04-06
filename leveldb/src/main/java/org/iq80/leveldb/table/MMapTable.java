@@ -17,7 +17,6 @@
  */
 package org.iq80.leveldb.table;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -25,7 +24,6 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Comparator;
-import java.util.concurrent.Callable;
 import org.iq80.leveldb.util.ByteBufferSupport;
 import org.iq80.leveldb.util.Closeables;
 import org.iq80.leveldb.util.Slice;
@@ -70,9 +68,9 @@ public class MMapTable extends Table {
     return Footer.readFooter(footerSlice);
   }
 
-  @Override
-  public Callable<?> closer() {
-    return new Closer(name, fileChannel, data);
+  public void close() {
+    ByteBufferSupport.unmap(data);
+    Closeables.closeQuietly(fileChannel);
   }
 
   @SuppressWarnings({
@@ -99,8 +97,11 @@ public class MMapTable extends Table {
 
     // decompress data
     Slice uncompressedData;
-    ByteBuffer uncompressedBuffer =
-        read(this.data, (int) blockHandle.getOffset(), blockHandle.getDataSize());
+    ByteBuffer uncompressedBuffer = read(
+        this.data,
+        (int) blockHandle.getOffset(),
+        blockHandle.getDataSize()
+    );
     if (blockTrailer.getCompressionType() == SNAPPY) {
       synchronized (MMapTable.class) {
         int uncompressedLength = uncompressedLength(uncompressedBuffer);
@@ -117,23 +118,5 @@ public class MMapTable extends Table {
     }
 
     return new Block(uncompressedData, comparator);
-  }
-
-  private static class Closer implements Callable<Void> {
-    private final String name;
-    private final Closeable closeable;
-    private final MappedByteBuffer data;
-
-    public Closer(String name, Closeable closeable, MappedByteBuffer data) {
-      this.name = name;
-      this.closeable = closeable;
-      this.data = data;
-    }
-
-    public Void call() {
-      ByteBufferSupport.unmap(data);
-      Closeables.closeQuietly(closeable);
-      return null;
-    }
   }
 }

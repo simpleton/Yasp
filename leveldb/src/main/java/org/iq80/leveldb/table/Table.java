@@ -18,12 +18,10 @@
 package org.iq80.leveldb.table;
 
 import android.util.Log;
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Comparator;
-import java.util.concurrent.Callable;
 import org.iq80.leveldb.impl.SeekingIterable;
 import org.iq80.leveldb.util.Closeables;
 import org.iq80.leveldb.util.Slice;
@@ -45,10 +43,8 @@ public abstract class Table implements SeekingIterable<Slice, Slice> {
   protected final BlockHandle metaindexBlockHandle;
 
   public Table(
-      String name,
-      FileChannel fileChannel,
-      Comparator<Slice> comparator,
-      boolean verifyChecksums) throws IOException {
+      String name, FileChannel fileChannel, Comparator<Slice> comparator, boolean verifyChecksums)
+      throws IOException {
     requireNonNull(name, "name is null");
     requireNonNull(fileChannel, "fileChannel is null");
     long size = fileChannel.size();
@@ -128,23 +124,5 @@ public abstract class Table implements SeekingIterable<Slice, Slice> {
 
   public void close() {
     Closeables.closeQuietly(fileChannel);
-  }
-
-  public Callable<?> closer() {
-    return new Closer(fileChannel);
-  }
-
-  private static class Closer implements Callable<Void> {
-    private final Closeable closeable;
-
-    public Closer(Closeable closeable) {
-      this.closeable = closeable;
-    }
-
-    @Override
-    public Void call() {
-      Closeables.closeQuietly(closeable);
-      return null;
-    }
   }
 }
