@@ -126,6 +126,10 @@ public abstract class Table implements SeekingIterable<Slice, Slice> {
     return sb.toString();
   }
 
+  public void close() {
+    Closeables.closeQuietly(fileChannel);
+  }
+
   public Callable<?> closer() {
     return new Closer(fileChannel);
   }

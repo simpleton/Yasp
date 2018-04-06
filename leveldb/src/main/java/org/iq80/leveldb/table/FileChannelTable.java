@@ -28,6 +28,7 @@ import org.iq80.leveldb.util.Snappy;
 import static org.iq80.leveldb.CompressionType.SNAPPY;
 
 public class FileChannelTable extends Table {
+
   public FileChannelTable(
       String name,
       FileChannel fileChannel,
@@ -49,8 +50,10 @@ public class FileChannelTable extends Table {
   @Override
   protected Block readBlock(BlockHandle blockHandle) throws IOException {
     // read block trailer
-    ByteBuffer trailerData =
-        read(blockHandle.getOffset() + blockHandle.getDataSize(), BlockTrailer.ENCODED_LENGTH);
+    ByteBuffer trailerData = read(
+        blockHandle.getOffset() + blockHandle.getDataSize(),
+        BlockTrailer.ENCODED_LENGTH
+    );
     BlockTrailer blockTrailer = BlockTrailer.readBlockTrailer(Slices.copiedBuffer(trailerData));
 
     // todo re-enable crc check when ported to support direct buffers

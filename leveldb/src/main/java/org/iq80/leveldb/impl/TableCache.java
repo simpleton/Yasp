@@ -26,7 +26,6 @@ import org.iq80.leveldb.table.FileChannelTable;
 import org.iq80.leveldb.table.MMapTable;
 import org.iq80.leveldb.table.Table;
 import org.iq80.leveldb.table.UserComparator;
-import org.iq80.leveldb.util.Closeables;
 import org.iq80.leveldb.util.Finalizer;
 import org.iq80.leveldb.util.InternalTableIterator;
 import org.iq80.leveldb.util.Slice;
@@ -34,7 +33,7 @@ import org.iq80.leveldb.util.Slice;
 import static com.simsun.common.base.Utils.requireNonNull;
 
 public class TableCache {
-  private final LruCache<Long, TableAndFile> cache;
+  private final TableLruCache cache;
   private final Finalizer<Table> finalizer = new Finalizer<>(1);
 
   final UserComparator userComparator;
@@ -48,7 +47,7 @@ public class TableCache {
       final boolean verifyChecksums) {
     requireNonNull(databaseDir, "databaseName is null");
 
-    cache = new LruCache<>(tableCacheSize);
+    cache = new TableLruCache(tableCacheSize);
     this.userComparator = userComparator;
     this.verifyChecksums = verifyChecksums;
     this.databaseDir = databaseDir;
@@ -113,28 +112,45 @@ public class TableCache {
       File tableFile = new File(databaseDir, tableFileName);
       FileInputStream fis = new FileInputStream(tableFile);
       FileChannel fileChannel = fis.getChannel();
-      try {
-        if (Iq80DBFactory.USE_MMAP) {
-          table = new MMapTable(tableFile.getAbsolutePath(),
-              fileChannel,
-              userComparator,
-              verifyChecksums
-          );
-        } else {
-          table = new FileChannelTable(tableFile.getAbsolutePath(),
-              fileChannel,
-              userComparator,
-              verifyChecksums
-          );
-        }
-      } finally {
-        Closeables.closeQuietly(fis);
-        Closeables.closeQuietly(fileChannel);
+      if (Iq80DBFactory.USE_MMAP) {
+        table = new MMapTable(tableFile.getAbsolutePath(),
+            fileChannel,
+            userComparator,
+            verifyChecksums
+        );
+      } else {
+        table = new FileChannelTable(tableFile.getAbsolutePath(),
+            fileChannel,
+            userComparator,
+            verifyChecksums
+        );
       }
     }
 
     public Table getTable() {
       return table;
+    }
+  }
+
+  private class TableLruCache extends LruCache<Long, TableAndFile> {
+
+    /**
+     * @param maxSize for caches that do not override {@link #sizeOf}, this is
+     *     the maximum number of entries in the cache. For all other caches,
+     *     this is the maximum sum of the sizes of the entries in this cache.
+     */
+    public TableLruCache(int maxSize) {
+      super(maxSize);
+    }
+
+    @Override
+    protected void entryRemoved(
+        boolean evicted,
+        Long key,
+        TableAndFile oldValue,
+        TableAndFile newValue) {
+      super.entryRemoved(evicted, key, oldValue, newValue);
+      oldValue.getTable().close();
     }
   }
 }
