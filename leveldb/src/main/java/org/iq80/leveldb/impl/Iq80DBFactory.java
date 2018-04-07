@@ -124,7 +124,7 @@ public class Iq80DBFactory implements DBFactory {
   @Override
   public DB open(File path, Options options) {
     try {
-      return new DbImpl(options, path);
+      return new DbImpl(path, options);
     } catch (IOException e) {
       e.printStackTrace();
     }

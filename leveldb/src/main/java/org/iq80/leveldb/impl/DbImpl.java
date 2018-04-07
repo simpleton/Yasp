@@ -112,7 +112,7 @@ public class DbImpl implements DB {
   volatile Throwable backgroundException;
 
 
-  public DbImpl(Options options, File databaseDir) throws IOException {
+  public DbImpl(File databaseDir, Options options) throws IOException {
     requireNonNull(options, "options is null");
     requireNonNull(databaseDir, "databaseDir is null");
     this.options = options;
