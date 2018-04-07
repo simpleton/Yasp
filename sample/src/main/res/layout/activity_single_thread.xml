@@ -5,30 +5,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:showIn="@layout/activity_main"
-    tools:context=".MainActivity"
+    tools:context=".SingleThreadActivity"
     >
 
   <LinearLayout
-      android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:padding="16dp"
+      android:layout_width="match_parent"
       android:orientation="vertical"
+      android:padding="16dp"
       >
+
     <Button
-        android:layout_height="64dp"
         android:layout_width="match_parent"
-        android:text="Single Thread"
-        android:id="@+id/btn_single_thread"
+        android:layout_height="48dp"
+        android:id="@+id/btn_get"
+        android:text="GET"
         />
 
     <Button
-        android:layout_height="64dp"
         android:layout_width="match_parent"
-        android:layout_marginTop="12dp"
-        android:text="Multiple Thread"
-        android:id="@+id/btn_mutiple_thread"
+        android:layout_height="48dp"
+        android:id="@+id/btn_put"
+        android:text="PUT"
         />
   </LinearLayout>
 
