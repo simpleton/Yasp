@@ -18,9 +18,10 @@ import static org.iq80.leveldb.impl.Iq80DBFactory.asLong;
 import static org.iq80.leveldb.impl.Iq80DBFactory.asString;
 import static org.iq80.leveldb.impl.Iq80DBFactory.bytes;
 
-public class YASharedPreferences implements SharedPreferences {
+final class YASharedPreferences implements SharedPreferences {
 
   public static final String TAG = "YASharedPreferences";
+  private static final boolean DEBUG = false;
 
   final DB db;
 
@@ -181,6 +182,10 @@ public class YASharedPreferences implements SharedPreferences {
 
     @Override
     public boolean commit() {
+      long startTime = 0;
+      if (DEBUG) {
+        startTime = System.currentTimeMillis();
+      }
       try {
         db.write(batch);
         return true;
