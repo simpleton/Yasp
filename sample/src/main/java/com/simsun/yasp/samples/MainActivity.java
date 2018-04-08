@@ -34,5 +34,10 @@ public class MainActivity extends AppCompatActivity {
       Intent intent = new Intent(this, MultipleThreadActivity.class);
       this.startActivity(intent);
     });
+
+    findViewById(R.id.btn_simple_benchmark).setOnClickListener(v -> {
+      Intent intent = new Intent(this, BenchmarkActivity.class);
+      this.startActivity(intent);
+    });
   }
 }

@@ -30,6 +30,14 @@
         android:text="Multiple Thread"
         android:id="@+id/btn_mutiple_thread"
         />
+
+    <Button
+        android:layout_height="64dp"
+        android:layout_width="match_parent"
+        android:layout_marginTop="12dp"
+        android:text="Benchmark"
+        android:id="@+id/btn_simple_benchmark"
+        />
   </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

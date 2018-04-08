@@ -22,6 +22,7 @@ public class MultipleThreadActivity extends AppCompatActivity {
         TimeUnit.SECONDS,
         new LinkedBlockingQueue<>()
     );
+
     findViewById(R.id.btn_get).setOnClickListener(v -> {
       threadPoolExecutor.execute(() -> {
         SharedPreferences sp = YASPContext.with(this).getSharedPreferences("multi_thread", 0);
