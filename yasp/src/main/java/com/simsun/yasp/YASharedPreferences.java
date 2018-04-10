@@ -1,9 +1,11 @@
 package com.simsun.yasp;
 
 import android.content.SharedPreferences;
+import android.os.Parcel;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import org.iq80.leveldb.DB;
@@ -21,8 +23,6 @@ import static org.iq80.leveldb.impl.Iq80DBFactory.bytes;
 final class YASharedPreferences implements SharedPreferences {
 
   public static final String TAG = "YASharedPreferences";
-  private static final boolean DEBUG = false;
-
   final DB db;
 
   public YASharedPreferences(DB db) {
@@ -35,7 +35,7 @@ final class YASharedPreferences implements SharedPreferences {
 
   @Override
   public Map<String, ?> getAll() {
-    return null;
+    throw new RuntimeException("Please don't use this API, it's evil");
   }
 
   @Nullable
@@ -53,7 +53,13 @@ final class YASharedPreferences implements SharedPreferences {
   @Nullable
   @Override
   public Set<String> getStringSet(String key, @Nullable Set<String> defValues) {
-    return null;
+    Set<String> values = defValues;
+    try {
+      values = ParcelableUtil.unMarshallStringSet(db.get(bytes(key)));
+    } catch (DBException e) {
+      Log.e(TAG, "DB Exception", e);
+    }
+    return values;
   }
 
   @Override
@@ -135,13 +141,18 @@ final class YASharedPreferences implements SharedPreferences {
 
     @Override
     public SharedPreferences.Editor putString(String key, @Nullable String value) {
-      batch.put(bytes(key), bytes(value));
+      if (value != null) {
+        batch.put(bytes(key), bytes(value));
+      }
       return this;
     }
 
     @Override
     public SharedPreferences.Editor putStringSet(String key, @Nullable Set<String> values) {
-      return null;
+      if (values != null) {
+        batch.put(bytes(key), ParcelableUtil.marshallStringSet(values));
+      }
+      return this;
     }
 
     @Override
@@ -182,10 +193,6 @@ final class YASharedPreferences implements SharedPreferences {
 
     @Override
     public boolean commit() {
-      long startTime = 0;
-      if (DEBUG) {
-        startTime = System.currentTimeMillis();
-      }
       try {
         db.write(batch);
         return true;
