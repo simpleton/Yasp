@@ -134,9 +134,11 @@ public class TableCache {
         Long key,
         TableAndFile oldValue,
         TableAndFile newValue) {
-      super.entryRemoved(evicted, key, oldValue, newValue);
-      if (oldValue != newValue) {
-        oldValue.getTable().close();
+      synchronized (this) {
+        super.entryRemoved(evicted, key, oldValue, newValue);
+        if (oldValue != newValue) {
+          oldValue.getTable().close();
+        }
       }
     }
   }

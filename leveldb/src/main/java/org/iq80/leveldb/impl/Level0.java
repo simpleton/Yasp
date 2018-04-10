@@ -53,7 +53,7 @@ public class Level0 implements SeekingIterable<InternalKey, Slice> {
     requireNonNull(tableCache, "tableCache is null");
     requireNonNull(internalKeyComparator, "internalKeyComparator is null");
 
-    this.files = new ArrayList<>(files);
+    this.files = Collections.synchronizedList(new ArrayList<>(files));
     this.tableCache = tableCache;
     this.internalKeyComparator = internalKeyComparator;
   }
@@ -78,10 +78,9 @@ public class Level0 implements SeekingIterable<InternalKey, Slice> {
 
     List<FileMetaData> fileMetaDataList = new ArrayList<>(files.size());
     for (FileMetaData fileMetaData : files) {
-      if (internalKeyComparator.getUserComparator()
-              .compare(key.getUserKey(), fileMetaData.getSmallest().getUserKey()) >= 0
-          && internalKeyComparator.getUserComparator()
-                 .compare(key.getUserKey(), fileMetaData.getLargest().getUserKey()) <= 0) {
+      UserComparator uc = internalKeyComparator.getUserComparator();
+      if (uc.compare(key.getUserKey(), fileMetaData.getSmallest().getUserKey()) >= 0
+          && uc.compare(key.getUserKey(), fileMetaData.getLargest().getUserKey()) <= 0) {
         fileMetaDataList.add(fileMetaData);
       }
     }

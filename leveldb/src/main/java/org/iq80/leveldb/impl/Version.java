@@ -211,7 +211,7 @@ public class Version implements SeekingIterable<InternalKey, Slice> {
   public MultiMap<Integer, FileMetaData> getFiles() {
     MultiMap<Integer, FileMetaData> multiMap = new MultiMap<>();
 
-    multiMap.putAll(0, level0.getFiles());
+    multiMap.putAll(level0.getLevelNumber(), level0.getFiles());
     for (Level level : levels) {
       multiMap.putAll(level.getLevelNumber(), level.getFiles());
     }

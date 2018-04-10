@@ -44,9 +44,6 @@ public class FileChannelTable extends Table {
     return Footer.readFooter(Slices.copiedBuffer(footerData));
   }
 
-  @SuppressWarnings({
-      "AssignmentToStaticFieldFromInstanceMethod", "NonPrivateFieldAccessedInSynchronizedContext"
-  })
   @Override
   protected Block readBlock(BlockHandle blockHandle) throws IOException {
     // read block trailer

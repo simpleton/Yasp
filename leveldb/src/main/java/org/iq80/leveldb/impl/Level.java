@@ -51,7 +51,7 @@ public class Level implements SeekingIterable<InternalKey, Slice> {
     requireNonNull(tableCache, "tableCache is null");
     requireNonNull(internalKeyComparator, "internalKeyComparator is null");
 
-    this.files = new ArrayList<>(files);
+    this.files = Collections.synchronizedList(new ArrayList<>(files));
     this.tableCache = tableCache;
     this.internalKeyComparator = internalKeyComparator;
     checkArgument(levelNumber >= 0, "levelNumber is negative");
@@ -86,7 +86,7 @@ public class Level implements SeekingIterable<InternalKey, Slice> {
     return createLevelConcatIterator(tableCache, files, internalKeyComparator);
   }
 
-  public LookupResult get(LookupKey key, ReadStats readStats) {
+  public synchronized LookupResult get(LookupKey key, ReadStats readStats) {
     if (files.isEmpty()) {
       return null;
     }
@@ -94,10 +94,9 @@ public class Level implements SeekingIterable<InternalKey, Slice> {
     List<FileMetaData> fileMetaDataList = new ArrayList<>(files.size());
     if (levelNumber == 0) {
       for (FileMetaData fileMetaData : files) {
-        if (internalKeyComparator.getUserComparator()
-                .compare(key.getUserKey(), fileMetaData.getSmallest().getUserKey()) >= 0
-            && internalKeyComparator.getUserComparator()
-                   .compare(key.getUserKey(), fileMetaData.getLargest().getUserKey()) <= 0) {
+        UserComparator uc = internalKeyComparator.getUserComparator();
+        if (uc.compare(key.getUserKey(), fileMetaData.getSmallest().getUserKey()) >= 0
+            && uc.compare(key.getUserKey(), fileMetaData.getLargest().getUserKey()) <= 0) {
           fileMetaDataList.add(fileMetaData);
         }
       }
@@ -116,11 +115,10 @@ public class Level implements SeekingIterable<InternalKey, Slice> {
 
       // check if the smallest user key in the file is less than the target user key
       FileMetaData fileMetaData = files.get(index);
-      if (internalKeyComparator.getUserComparator()
-              .compare(key.getUserKey(), fileMetaData.getSmallest().getUserKey()) < 0) {
+      UserComparator uc = internalKeyComparator.getUserComparator();
+      if (uc.compare(key.getUserKey(), fileMetaData.getSmallest().getUserKey()) < 0) {
         return null;
       }
-
       // search this file
       fileMetaDataList.add(fileMetaData);
     }
@@ -167,14 +165,13 @@ public class Level implements SeekingIterable<InternalKey, Slice> {
     return null;
   }
 
-  public boolean someFileOverlapsRange(Slice smallestUserKey, Slice largestUserKey) {
+  public synchronized boolean someFileOverlapsRange(Slice smallestUserKey, Slice largestUserKey) {
     InternalKey smallestInternalKey = new InternalKey(smallestUserKey, MAX_SEQUENCE_NUMBER, VALUE);
     int index = findFile(smallestInternalKey);
 
-    UserComparator userComparator = internalKeyComparator.getUserComparator();
-    return ((index < files.size())
-            && userComparator.compare(largestUserKey, files.get(index).getSmallest().getUserKey())
-               >= 0);
+    UserComparator uc = internalKeyComparator.getUserComparator();
+    return (index < files.size()
+            && uc.compare(largestUserKey, files.get(index).getSmallest().getUserKey()) >= 0);
   }
 
   private int findFile(InternalKey targetKey) {
