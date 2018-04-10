@@ -22,30 +22,44 @@
         android:text="Prepare Test Data"
         />
 
-    <RadioGroup
-        android:layout_width="match_parent"
+    <LinearLayout
         android:layout_height="56dp"
-        android:id="@+id/radio_group"
+        android:layout_width="match_parent"
         android:orientation="horizontal"
-        android:padding="4dp"
         >
-      <android.support.v7.widget.AppCompatRadioButton
-          android:id="@+id/radio_normal_sp"
+      <RadioGroup
+          android:layout_width="wrap_content"
+          android:layout_height="56dp"
+          android:id="@+id/radio_group"
+          android:orientation="horizontal"
+          android:padding="4dp"
+          >
+        <android.support.v7.widget.AppCompatRadioButton
+            android:id="@+id/radio_normal_sp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Original SP"
+            android:checked="true"
+            />
+
+        <android.support.v7.widget.AppCompatRadioButton
+            android:id="@+id/radio_yasp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="16dp"
+            android:text="YASP"
+            />
+      </RadioGroup>
+
+      <android.support.v7.widget.SwitchCompat
           android:layout_width="wrap_content"
           android:layout_height="match_parent"
-          android:text="Original SP"
-          android:checked="true"
+          android:id="@+id/switch_multi_thread"
+          android:layout_marginLeft="8dp"
+          android:text="Mutiple Thread"
           />
 
-      <android.support.v7.widget.AppCompatRadioButton
-          android:id="@+id/radio_yasp"
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent"
-          android:layout_marginLeft="16dp"
-          android:text="YASP"
-          />
-    </RadioGroup>
-
+    </LinearLayout>
 
     <android.support.percent.PercentRelativeLayout
         android:layout_width="match_parent"
