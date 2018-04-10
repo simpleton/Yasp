@@ -69,6 +69,7 @@ public class ParcelableUtil {
     try {
       parcel = Parcel.obtain();
       parcel.unmarshall(bytes, 0, bytes.length);
+      parcel.setDataPosition(0);
       return new HashSet<>(parcel.createStringArrayList());
     } finally {
       if (parcel != null) {
