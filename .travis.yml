@@ -1,0 +1,23 @@
+language: android
+script: "./gradlew clean install check"
+before_install:
+  - yes | sdkmanager "platforms;android-27"
+android:
+  components:
+    - tools
+    - platform-tools
+    - tools
+    # The BuildTools version used by your project
+    - build-tools-27.1.1
+    # The SDK version used to compile your project
+    - android-27
+licenses:
+  - android-sdk-preview-license-.+
+  - android-sdk-license-.+
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+cache:
+  directories:
+    - $HOME/.m2
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
