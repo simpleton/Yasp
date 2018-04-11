@@ -49,5 +49,5 @@ ext {
 
   licenseName = 'Apache License 2.0'
   licenseUrl = 'https://opensource.org/licenses/Apache-2.0'
-  allLicenses = ["Apache License 2.0"]
+  allLicenses = ["Apache-2.0"]
 }
