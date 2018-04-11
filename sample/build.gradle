@@ -14,6 +14,7 @@ apply plugin: 'hugo'
 android {
 
   compileSdkVersion project.TargetSdkVersion
+  buildToolsVersion project.BuildToolsVersion
 
   defaultConfig {
     applicationId "com.simsun.yasp.samples"

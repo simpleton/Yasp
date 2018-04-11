@@ -9,6 +9,7 @@ ext {
 
 android {
   compileSdkVersion project.CompileSdkVersion
+  buildToolsVersion project.BuildToolsVersion
 
   defaultConfig {
     minSdkVersion project.MinSdkVersion
