@@ -1,5 +1,12 @@
 apply plugin: 'com.android.library'
 
+ext {
+  bintrayName = POM_NAME
+  libraryName = POM_NAME
+  artifact = POM_ARTIFACT_ID
+  packageMethod = POM_PACKAGING
+}
+
 android {
   compileSdkVersion project.CompileSdkVersion
 
@@ -22,3 +29,5 @@ dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
 
+apply from: "${rootProject.projectDir}/gradle/install.gradle"
+apply from: "${rootProject.projectDir}/gradle/bintray.gradle"

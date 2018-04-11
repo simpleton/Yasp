@@ -1,5 +1,12 @@
 apply plugin: 'com.android.library'
 
+ext {
+  bintrayName = POM_NAME
+  libraryName = POM_NAME
+  artifact = POM_ARTIFACT_ID
+  packageMethod = POM_PACKAGING
+}
+
 android {
   compileSdkVersion project.CompileSdkVersion
 
@@ -27,3 +34,6 @@ dependencies {
   testImplementation "org.testng:testng:6.14.2"
   testImplementation "junit:junit:${project.JunitVersion}"
 }
+
+apply from: "${rootProject.projectDir}/gradle/install.gradle"
+apply from: "${rootProject.projectDir}/gradle/bintray.gradle"
