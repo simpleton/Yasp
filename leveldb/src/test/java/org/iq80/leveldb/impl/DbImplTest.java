@@ -94,7 +94,7 @@ public class DbImplTest {
     Options options = new Options();
     options.maxOpenFiles(100);
     options.createIfMissing(true);
-    DbImpl db = new DbImpl(options, this.databaseDir);
+    DbImpl db = new DbImpl(this.databaseDir, options);
     Random random = new Random(301);
     for (int i = 0; i < 200000 * STRESS_FACTOR; i++) {
       db.put(
@@ -113,7 +113,7 @@ public class DbImplTest {
   public void testCompactionsOnBigDataSet() throws Exception {
     Options options = new Options();
     options.createIfMissing(true);
-    DbImpl db = new DbImpl(options, databaseDir);
+    DbImpl db = new DbImpl(databaseDir, options);
     for (int index = 0; index < 5000000; index++) {
       String key = "Key LOOOOOOOOOOOOOOOOOONG KEY " + index;
       String value = "This is element "
@@ -1029,7 +1029,7 @@ public class DbImplTest {
     DbStringWrapper(Options options, File databaseDir) throws IOException {
       this.options = options.verifyChecksums(true).createIfMissing(true).errorIfExists(true);
       this.databaseDir = databaseDir;
-      this.db = new DbImpl(options, databaseDir);
+      this.db = new DbImpl(databaseDir, options);
       opened.add(this);
     }
 
@@ -1117,8 +1117,8 @@ public class DbImplTest {
     public void reopen(Options options) throws IOException {
       db.close();
       db = new DbImpl(
-          options.verifyChecksums(true).createIfMissing(false).errorIfExists(false),
-          databaseDir
+          databaseDir,
+          options.verifyChecksums(true).createIfMissing(false).errorIfExists(false)
       );
     }
 
