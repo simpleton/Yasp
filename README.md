@@ -21,7 +21,26 @@ implementation 'com.simsun.yasp:yasp:0.0.1'
 ```
 
 ## API Usage
-// TODO
+Almost compat with Android [SharedPreference](https://developer.android.com/reference/android/content/SharedPreferences.html), but there is a little different during initializing. 
+### Init
+```java
+SharedPreferences sp = YASPContext.with(Context ct).getSharedPreferences(String name, int mode);
+```
+
+### Get
+As same as Android [SharedPreference](https://developer.android.com/reference/android/content/SharedPreferences.html)
+```java
+sp.getString(String key, String defaultVal);
+```
+
+### Editor
+As same as Android [SharedPreference](https://developer.android.com/reference/android/content/SharedPreferences.html)
+```java
+sp.edit()
+  .putString(String key, String value)
+  .putInt(String key, int value)
+  .apply();
+```
 
 ## Benchmark
 // TODO
