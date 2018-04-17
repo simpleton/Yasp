@@ -16,7 +16,7 @@ There are some situations where SharedPreferences are not suitable for store KV 
 ## Download
 **Use Gradle:**
 ```gradle
-implementation 'com.simsun.yasp:yasp:0.0.1'
+implementation 'com.simsun.yasp:yasp:0.0.2'
 ```
 
 **Or Maven:**
@@ -24,18 +24,21 @@ implementation 'com.simsun.yasp:yasp:0.0.1'
 <dependency>
   <groupId>com.simsun.yasp</groupId>
   <artifactId>yasp</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <type>pom</type>
 </dependency>
 ```
 
 ## API Usage
 Almost compat with Android [SharedPreference](https://developer.android.com/reference/android/content/SharedPreferences.html), but there is a little different during initializing.
+
+Yasp will **NOT** load whole file when you access one parameter. Feel free to cache yasp instance in your Application.
+
 ### Init
 ```java
 SharedPreferences sp = YASPContext.with(Context ct).getSharedPreferences(String name, int mode);
 ```
-**Do NOT support multiple processes**
+**Do NOT support multiple processes currently**
 
 ### Get
 As same as Android [SharedPreference](https://developer.android.com/reference/android/content/SharedPreferences.html)
