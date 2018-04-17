@@ -2,6 +2,7 @@ package com.simsun.yasp.samples;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
@@ -19,8 +20,11 @@ import java.util.concurrent.TimeUnit;
 
 public class BenchmarkActivity extends AppCompatActivity {
   public static final String TAG = "BenchmarkActivity";
-  public static int TEST_THRESHOLD = 10000;
-  public static int TEST_SINGLE_THRESHOLD = 100;
+  public static int TEST_THRESHOLD = 1024;
+  public static int TEST_SINGLE_THRESHOLD = 128;
+  public static int THREAD_NUM = 16;
+  public static int STRING_LENGTH = 2048;
+
   private HashMap<String, String> testData = new HashMap<>();
   private TEST_TYPE currentType = TEST_TYPE.ORIGINAL_SP;
   private boolean enableMultipleThread;
@@ -57,9 +61,10 @@ public class BenchmarkActivity extends AppCompatActivity {
       for (int i = 0; i < TEST_THRESHOLD; ++i) {
         testData.put(
             String.format("Key:%s", i),
-            String.format("#%s: content is %s", i, randString(32))
+            String.format("#%s: content is %s", i, randString(STRING_LENGTH))
         );
       }
+      console.setText("Data Ready");
     });
 
     findViewById(R.id.btn_put).setOnClickListener(v -> handleInsert(console));
@@ -93,32 +98,37 @@ public class BenchmarkActivity extends AppCompatActivity {
 
   @DebugLog
   private void handleGet(TextView console) {
+    Handler mainHandler = new Handler(getMainLooper());
     long startTime = System.currentTimeMillis();
-    long endTime;
-    final SharedPreferences sp = createSP();
+    console.setText(String.format("Start getting...%s\n", startTime));
     if (enableMultipleThread) {
-      for (int i = 0; i < 50; ++i) {
+      for (int i = 0; i < THREAD_NUM; ++i) {
         threadPoolExecutor.execute(new WorkingThread(i) {
           @Override
           public void run() {
+            final SharedPreferences sp = createSP(String.format("T %s", this.input));
             for (int j = 0; j < BenchmarkActivity.TEST_SINGLE_THRESHOLD; ++j) {
               String value = sp.getString(String.format(
                   "MKey%s",
                   this.input * BenchmarkActivity.TEST_SINGLE_THRESHOLD + j
               ), "");
-              Log.d(TAG, String.format("%s", value));
+              //Log.d(TAG, String.format("%s", value));
             }
+            final long endTime = System.currentTimeMillis();
+            mainHandler.post(() -> console.append(String.format("End writing...%s. Delta: %s ms\n",
+                endTime,
+                endTime - startTime
+            )));
           }
         });
-
       }
     } else {
-      console.setText(String.format("Start getting...%s\n", startTime));
+      final SharedPreferences sp = createSP();
       for (int i = 0; i < TEST_THRESHOLD; ++i) {
-        String value = sp.getString(String.format("Key:%s", i), "");
-        Log.d(TAG, value);
+        sp.getString(String.format("Key:%s", i), "");
+        //Log.d(TAG, value);
       }
-      endTime = System.currentTimeMillis();
+      final long endTime = System.currentTimeMillis();
       console.append(String.format("End getting...%s. Delta: %s ms\n",
           endTime,
           endTime - startTime
@@ -128,29 +138,35 @@ public class BenchmarkActivity extends AppCompatActivity {
 
   @DebugLog
   private void handleInsert(TextView console) {
+    Handler mainHandler = new Handler(getMainLooper());
     long startTime = System.currentTimeMillis();
-    long endTime;
-    final SharedPreferences sp = createSP();
+    console.setText(String.format("Start writing ...%s\n", System.currentTimeMillis()));
     if (enableMultipleThread) {
-      for (int i = 0; i < 50; ++i) {
+      for (int i = 0; i < THREAD_NUM; ++i) {
         threadPoolExecutor.execute(new WorkingThread(i) {
           @Override
           public void run() {
+            final SharedPreferences sp = createSP(String.format("T %s", this.input));
             for (int j = 0; j < BenchmarkActivity.TEST_SINGLE_THRESHOLD; ++j) {
               sp.edit().putString(String.format(
                   "MKey%s",
                   this.input * BenchmarkActivity.TEST_SINGLE_THRESHOLD + j
               ), "").apply();
             }
+            long endTime = System.currentTimeMillis();
+            mainHandler.post(() -> console.append(String.format("End writing...%s. Delta: %s ms\n",
+                endTime,
+                endTime - startTime
+            )));
           }
         });
       }
     } else {
-      console.setText(String.format("Start writing ...%s\n", System.currentTimeMillis()));
+      final SharedPreferences sp = createSP();
       for (Map.Entry<String, String> entry : testData.entrySet()) {
         sp.edit().putString(entry.getKey(), entry.getValue()).apply();
       }
-      endTime = System.currentTimeMillis();
+      long endTime = System.currentTimeMillis();
       console.append(String.format("End writing...%s. Delta: %s ms\n",
           endTime,
           endTime - startTime
@@ -158,14 +174,18 @@ public class BenchmarkActivity extends AppCompatActivity {
     }
   }
 
-  private SharedPreferences createSP() {
+  SharedPreferences createSP() {
+    return createSP("");
+  }
+
+  SharedPreferences createSP(String name) {
     SharedPreferences sp = null;
     switch (this.currentType) {
       case YASP:
-        sp = YASPContext.with(this).getSharedPreferences("benchmark", MODE_PRIVATE);
+        sp = YASPContext.with(this).getSharedPreferences("benchmark" + name, MODE_PRIVATE);
         break;
       case ORIGINAL_SP:
-        sp = this.getSharedPreferences("benchmark", MODE_PRIVATE);
+        sp = this.getSharedPreferences("benchmark" + name, MODE_PRIVATE);
         break;
     }
     return sp;
