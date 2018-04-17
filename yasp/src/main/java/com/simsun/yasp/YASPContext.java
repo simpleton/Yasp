@@ -18,7 +18,7 @@ import org.iq80.leveldb.impl.Iq80DBFactory;
 public class YASPContext {
 
   public static final String TAG = "YASPContext";
-  private static ConcurrentHashMap<String, YASharedPreferences> dbMap = new ConcurrentHashMap<>();
+  private static final ConcurrentHashMap<String, YASharedPreferences> dbMap = new ConcurrentHashMap<>();
 
   private final File baseDir;
 
@@ -41,13 +41,15 @@ public class YASPContext {
    *
    */
   public SharedPreferences getSharedPreferences(String name, int mode) {
-    if (dbMap.containsKey(name)) {
-      return dbMap.get(name);
-    } else {
-      DB db = openDB(this.baseDir, name);
-      YASharedPreferences sp = new YASharedPreferences(db);
-      dbMap.put(name, sp);
-      return sp;
+    synchronized (dbMap) {
+      if (dbMap.containsKey(name)) {
+        return dbMap.get(name);
+      } else {
+        DB db = openDB(this.baseDir, name);
+        YASharedPreferences sp = new YASharedPreferences(db);
+        dbMap.put(name, sp);
+        return sp;
+      }
     }
   }
 
