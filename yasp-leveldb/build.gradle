@@ -31,7 +31,6 @@ android {
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
   implementation project(path: ':leveldb')
-  implementation project(path: ':leveldb-api')
 
   implementation "com.android.support:appcompat-v7:${project.AndroidSupportVersion}"
   testImplementation 'junit:junit:4.12'
