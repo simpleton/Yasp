@@ -18,6 +18,7 @@
 package org.iq80.leveldb;
 
 import java.io.Closeable;
+import java.util.List;
 
 /**
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
@@ -27,4 +28,6 @@ public interface WriteBatch
   WriteBatch put(byte[] key, byte[] value);
 
   WriteBatch delete(byte[] key);
+
+  List<String> getModifiedKeys();
 }

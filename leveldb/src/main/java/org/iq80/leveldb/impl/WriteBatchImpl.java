@@ -26,6 +26,7 @@ import org.iq80.leveldb.util.Slice;
 import org.iq80.leveldb.util.Slices;
 
 import static com.simsun.common.base.Utils.requireNonNull;
+import static org.iq80.leveldb.impl.Iq80DBFactory.asString;
 
 public class WriteBatchImpl implements WriteBatch {
   private final List<Entry<Slice, Slice>> batch = new ArrayList<>();
@@ -64,6 +65,16 @@ public class WriteBatchImpl implements WriteBatch {
     batch.add(new AbstractMap.SimpleImmutableEntry<>(Slices.wrappedBuffer(key), (Slice) null));
     approximateSize += 6 + key.length;
     return this;
+  }
+
+  @Override
+  public List<String> getModifiedKeys() {
+    List<String> list = new ArrayList<>();
+    for (Entry<Slice, Slice> entry : batch) {
+      String key = asString(entry.getKey().getBytes());
+      list.add(key);
+    }
+    return list;
   }
 
   public WriteBatchImpl delete(Slice key) {

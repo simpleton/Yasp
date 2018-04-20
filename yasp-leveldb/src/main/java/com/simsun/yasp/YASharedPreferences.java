@@ -1,13 +1,15 @@
 package com.simsun.yasp;
 
 import android.content.SharedPreferences;
-import android.os.Parcel;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBException;
 import org.iq80.leveldb.WriteBatch;
@@ -23,14 +25,21 @@ import static org.iq80.leveldb.impl.Iq80DBFactory.bytes;
 final class YASharedPreferences implements SharedPreferences {
 
   public static final String TAG = "YASharedPreferences";
+  private final Object mLock = new Object();
+  private static final Object DUMMY_CONTENT = new Object();
+
+  final WeakHashMap<OnSharedPreferenceChangeListener, Object> mListeners = new WeakHashMap<>();
+  final Handler mainThreadHandler;
   final DB db;
 
   public YASharedPreferences(DB db) {
     this.db = db;
+    mainThreadHandler = new Handler(Looper.getMainLooper());
   }
 
   public void close() throws IOException {
     db.close();
+    mainThreadHandler.removeCallbacksAndMessages(null);
   }
 
   @Override
@@ -123,13 +132,18 @@ final class YASharedPreferences implements SharedPreferences {
 
   @Override
   public void registerOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
-    //FIXME:
+    synchronized(mLock) {
+      mListeners.put(listener, DUMMY_CONTENT);
+    }
   }
 
   @Override
   public void unregisterOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
-    //FIXME:
+    synchronized(mLock) {
+      mListeners.remove(listener);
+    }
   }
+
 
   public class Editor implements SharedPreferences.Editor {
 
@@ -195,6 +209,7 @@ final class YASharedPreferences implements SharedPreferences {
     public boolean commit() {
       try {
         db.write(batch);
+        this.notifyListeners(batch);
         return true;
       } catch (DBException ignore) {
         return false;
@@ -207,10 +222,33 @@ final class YASharedPreferences implements SharedPreferences {
     public void apply() {
       try {
         db.write(batch);
+        this.notifyListeners(batch);
       } catch (DBException e) {
         Log.e(TAG, "", e);
       } finally {
         Closeables.closeQuietly(batch);
+      }
+    }
+
+    void notifyListeners(final WriteBatch batch) {
+      final List<String> modifiedKeys = batch.getModifiedKeys();
+      if (Looper.myLooper() == Looper.getMainLooper()) {
+        for (int i = modifiedKeys.size() - 1; i >= 0; i--) {
+          final String key = modifiedKeys.get(i);
+          for (OnSharedPreferenceChangeListener listener : mListeners.keySet()) {
+            if (listener != null) {
+              listener.onSharedPreferenceChanged(YASharedPreferences.this, key);
+            }
+          }
+        }
+      } else {
+        // Run this function on the main thread.
+        mainThreadHandler.post(new Runnable() {
+          @Override
+          public void run() {
+            notifyListeners(batch);
+          }
+        });
       }
     }
   }
