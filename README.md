@@ -1,5 +1,5 @@
 # Yet Another SharedPreference
-[ ![Download](https://api.bintray.com/packages/simsun/maven/yasp/images/download.svg) ](https://bintray.com/simsun/maven/yasp/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/simsun/maven/yasp-leveldb/images/download.svg) ](https://bintray.com/simsun/maven/yasp-leveldb/_latestVersion)
 [![Build Status](https://travis-ci.org/simpleton/Yasp.svg?branch=master)](https://travis-ci.org/simpleton/Yasp)
 
 This library try to introduce a high performance K-V store in Android development to instead of [SharedPreference](https://developer.android.com/reference/android/content/SharedPreferences.html).
@@ -19,7 +19,7 @@ This library is wrapped [LevelDB in java](https://github.com/dain/leveldb) with 
 ### Download
 **Use Gradle:**
 ```gradle
-implementation 'com.simsun.yasp:yasp:0.0.2'
+implementation 'com.simsun.yasp:yasp-leveldb:0.0.3'
 ```
 
 ### API Usage
