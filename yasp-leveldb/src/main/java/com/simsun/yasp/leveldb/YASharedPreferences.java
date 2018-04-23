@@ -1,11 +1,9 @@
-package com.simsun.yasp;
+package com.simsun.yasp.leveldb;
 
 import android.content.SharedPreferences;
-import android.os.Parcel;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import org.iq80.leveldb.DB;

@@ -4,7 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import com.simsun.yasp.YASPContext;
+import com.simsun.yasp.leveldb.YASPContext;
 import java.util.HashSet;
 import java.util.Set;
 
