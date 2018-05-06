@@ -17,7 +17,7 @@ import org.iq80.leveldb.impl.Iq80DBFactory;
  */
 public class YASPContext {
 
-  public static final String TAG = "YASPContext";
+  public static final String TAG = "YASPContext.leveldb";
   private static final ConcurrentHashMap<String, YASharedPreferences> dbMap = new ConcurrentHashMap<>();
 
   private final File baseDir;

@@ -11,10 +11,11 @@ cmake_minimum_required(VERSION 3.4.1)
 # automatically packages shared libraries with your APK.
 
 add_library( # Specifies the name of the library.
-             liblmdb
+             liblmdb-jni
              # Sets the library as a shared library.
              SHARED
              # Provides a relative path to your source file(s).
              mdb.c lmdb.h
              midl.c  midl.h
+             lmdb-jni.c
             )

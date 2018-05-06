@@ -1,4 +1,4 @@
-package com.simsun.imdb;
+package com.simsun.lmdb;
 
 import org.junit.Test;
 

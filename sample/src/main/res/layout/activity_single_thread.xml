@@ -28,6 +28,13 @@
         android:id="@+id/btn_put"
         android:text="PUT"
         />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:id="@+id/btn_test_lmdb"
+        android:text="TEST LMDB"
+        />
   </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

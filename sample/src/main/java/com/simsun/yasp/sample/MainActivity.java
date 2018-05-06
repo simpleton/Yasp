@@ -27,8 +27,8 @@ public class MainActivity extends AppCompatActivity {
 
     findViewById(R.id.btn_single_thread).setOnClickListener(v -> {
       Intent intent = new Intent(this, SingleThreadActivity.class);
-      //this.startActivity(intent);
-      Crashlytics.getInstance().crash(); // Force a crash
+      this.startActivity(intent);
+      //Crashlytics.getInstance().crash(); // Force a crash
     });
 
 

@@ -4,7 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import com.simsun.yasp.leveldb.YASPContext;
+import com.simsun.yasp.lmdb.YASPContext;
 import com.simsun.yasp.samples.R;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,7 +27,7 @@ public class SingleThreadActivity extends AppCompatActivity {
     strSet.add("sp implementation");
 
     findViewById(R.id.btn_get).setOnClickListener(v -> {
-      SharedPreferences sp = YASPContext.with(this).getSharedPreferences("single_thread", 0);
+      SharedPreferences sp = com.simsun.yasp.leveldb.YASPContext.with(this).getSharedPreferences("single_thread", 0);
       for (int i = 0; i < 1000; ++i) {
         Set<String> values = sp.getStringSet(String.format("KeyNew%s", i), new HashSet<>());
         StringBuilder sb = new StringBuilder();
@@ -39,10 +39,14 @@ public class SingleThreadActivity extends AppCompatActivity {
     });
 
     findViewById(R.id.btn_put).setOnClickListener(v -> {
-      SharedPreferences sp = YASPContext.with(this).getSharedPreferences("single_thread", 0);
+      SharedPreferences sp = com.simsun.yasp.leveldb.YASPContext.with(this).getSharedPreferences("single_thread", 0);
       for (int i = 0; i < 1000; ++i) {
         sp.edit().putStringSet(String.format("KeyNew%s", i), strSet).apply();
       }
+    });
+
+    findViewById(R.id.btn_test_lmdb).setOnClickListener(v -> {
+      SharedPreferences sp = YASPContext.with(this).getSharedPreferences("test", 0);
     });
   }
 }
