@@ -12,7 +12,7 @@
       android:theme="@style/AppTheme"
       >
     <activity
-        android:name=".MainActivity"
+        android:name="com.simsun.yasp.sample.MainActivity"
         android:label="@string/app_name"
         android:theme="@style/AppTheme.NoActionBar"
         >
@@ -22,9 +22,9 @@
       </intent-filter>
     </activity>
 
-    <activity android:name=".SingleThreadActivity"> </activity>
-    <activity android:name=".MultipleThreadActivity"> </activity>
-    <activity android:name=".BenchmarkActivity"> </activity>
+    <activity android:name="com.simsun.yasp.sample.SingleThreadActivity"> </activity>
+    <activity android:name="com.simsun.yasp.sample.MultipleThreadActivity"> </activity>
+    <activity android:name="com.simsun.yasp.sample.BenchmarkActivity"> </activity>
   </application>
 
 </manifest>

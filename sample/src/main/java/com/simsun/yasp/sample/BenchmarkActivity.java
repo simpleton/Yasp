@@ -1,4 +1,4 @@
-package com.simsun.yasp.samples;
+package com.simsun.yasp.sample;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -8,6 +8,7 @@ import android.support.v7.widget.SwitchCompat;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import com.simsun.yasp.leveldb.YASPContext;
+import com.simsun.yasp.samples.R;
 import hugo.weaving.DebugLog;
 import java.io.IOException;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package com.simsun.yasp.samples;
+package com.simsun.yasp.sample;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,6 +6,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import com.crashlytics.android.Crashlytics;
+import com.simsun.yasp.samples.R;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,7 +27,8 @@ public class MainActivity extends AppCompatActivity {
 
     findViewById(R.id.btn_single_thread).setOnClickListener(v -> {
       Intent intent = new Intent(this, SingleThreadActivity.class);
-      this.startActivity(intent);
+      //this.startActivity(intent);
+      Crashlytics.getInstance().crash(); // Force a crash
     });
 
 

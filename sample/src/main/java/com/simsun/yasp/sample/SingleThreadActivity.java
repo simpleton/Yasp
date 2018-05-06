@@ -1,10 +1,11 @@
-package com.simsun.yasp.samples;
+package com.simsun.yasp.sample;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import com.simsun.yasp.leveldb.YASPContext;
+import com.simsun.yasp.samples.R;
 import java.util.HashSet;
 import java.util.Set;
 
