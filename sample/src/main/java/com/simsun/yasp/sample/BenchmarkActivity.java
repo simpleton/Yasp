@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import com.google.firebase.perf.metrics.AddTrace;
 import com.simsun.yasp.leveldb.YASPContext;
 import com.simsun.yasp.samples.R;
 import hugo.weaving.DebugLog;
@@ -97,6 +98,7 @@ public class BenchmarkActivity extends AppCompatActivity {
   }
 
   @DebugLog
+  @AddTrace(name = "handleGet", enabled = true)
   private void handleGet(TextView console) {
     Handler mainHandler = new Handler(getMainLooper());
     long startTime = System.currentTimeMillis();
@@ -137,6 +139,7 @@ public class BenchmarkActivity extends AppCompatActivity {
   }
 
   @DebugLog
+  @AddTrace(name = "handleInsert", enabled = true)
   private void handleInsert(TextView console) {
     Handler mainHandler = new Handler(getMainLooper());
     long startTime = System.currentTimeMillis();
